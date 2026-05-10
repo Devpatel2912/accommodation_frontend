@@ -258,24 +258,48 @@ class _NewRequestScreenContentState extends State<_NewRequestScreenContent>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          viewModel.isEditing ? 'Edit Request' : 'New Request',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textDark,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          viewModel.isEditing
-                              ? 'Update request details and members.'
-                              : 'Fill in details to request staff accommodation.',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.labelGrey,
-                          ),
+                        Row(
+                          children: [
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(
+                                Icons.arrow_back_ios_new_rounded,
+                                size: 20,
+                                color: AppColors.textDark,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    viewModel.isEditing
+                                        ? 'Edit Request'
+                                        : 'New Request',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textDark,
+                                      letterSpacing: -0.3,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    viewModel.isEditing
+                                        ? 'Update request details and members.'
+                                        : 'Fill in details to request staff accommodation.',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.labelGrey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

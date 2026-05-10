@@ -8,6 +8,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:excel/excel.dart';
 
 import 'package:accommodation/core/utils/notifications.dart';
+import 'package:accommodation/core/services/push_notification_service.dart';
+import 'package:accommodation/core/services/notification_service.dart';
 import 'dart:async';
 
 class NewRequestViewModel extends ChangeNotifier {
@@ -62,8 +64,7 @@ class NewRequestViewModel extends ChangeNotifier {
   String userPradesh = '';
   bool isAdmin = false;
   List<String> availablePradesh = [];
-  bool get shouldLockPradeshToRequester =>
-      isAdmin && isEditing && userPradesh.isNotEmpty;
+  bool get shouldLockPradeshToRequester => !isAdmin && userPradesh.isNotEmpty;
 
   void init(
     AccommodationRequest? request, {
@@ -381,6 +382,23 @@ class NewRequestViewModel extends ChangeNotifier {
     isLoading = false;
     if (success) {
       notify("Request created successfully!");
+      
+      // Notify admins about new request (Push)
+      PushNotificationService().triggerNotification(
+        topic: 'admins',
+        title: 'New Request Received',
+        body: 'A new accommodation request "${request.requestName}" has been submitted by a user.',
+        data: {
+          'type': 'NEW_REQUEST',
+          'requestName': request.requestName,
+        },
+      );
+
+      // Notify admins about new request (Real-time in-app)
+      NotificationService().sendAdminNotification({
+        'userName': request.members.isNotEmpty ? request.members.first.name : 'A user',
+        'requestName': request.requestName,
+      });
     } else {
       notify(
         "Failed to create request. Please check your connection.",

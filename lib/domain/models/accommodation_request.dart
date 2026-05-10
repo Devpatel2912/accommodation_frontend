@@ -142,12 +142,14 @@ class HouseAllocationDetails {
   final String? ownerName;
   final String? contactNumber;
   final String? address;
+  final String? imageUrl;
   final DateTime? allocationDate;
 
   const HouseAllocationDetails({
     this.ownerName,
     this.contactNumber,
     this.address,
+    this.imageUrl,
     this.allocationDate,
   });
 
@@ -166,6 +168,7 @@ class HouseAllocationDetails {
           houseJson?['contact_number']?.toString() ??
           houseJson?['phone']?.toString(),
       address: houseJson?['address']?.toString(),
+      imageUrl: houseJson?['image_url']?.toString(),
       allocationDate: _parseDate(json['created_at'] ?? json['allocation_date']),
     );
   }
@@ -176,12 +179,14 @@ class HouseAllocationDetails {
       contactNumber:
           json['contact_number']?.toString() ?? json['phone']?.toString(),
       address: json['address']?.toString(),
+      imageUrl: json['image_url']?.toString(),
     );
   }
 
   bool get hasAnyValue =>
       (ownerName?.isNotEmpty ?? false) ||
       (contactNumber?.isNotEmpty ?? false) ||
+      (imageUrl?.isNotEmpty ?? false) ||
       (address?.isNotEmpty ?? false);
 }
 

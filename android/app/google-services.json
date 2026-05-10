@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1027617189425",
+    "project_id": "accommodation-eb171",
+    "storage_bucket": "accommodation-eb171.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1027617189425:android:a8a6d4274c4836f7956f10",
+        "android_client_info": {
+          "package_name": "com.avd.accommodation"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0ebCpEadNNvQgYVYyVX8DMgspK9PVBEo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

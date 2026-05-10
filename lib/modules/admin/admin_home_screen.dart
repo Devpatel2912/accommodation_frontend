@@ -36,6 +36,8 @@ import 'package:accommodation/presentation/widgets/app_card.dart';
 import 'package:accommodation/presentation/widgets/app_dialog.dart';
 import 'package:accommodation/presentation/widgets/app_loading.dart';
 
+import '../../core/services/push_notification_service.dart';
+
 class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key});
 
@@ -232,13 +234,32 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Admin Dashboard',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Admin Dashboard',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const HugeIcon(
+                        icon: HugeIcons.strokeRoundedNotification01,
+                        color: AppColors.teal,
+                      ),
+                      onPressed: () {
+                        PushNotificationService().triggerNotification(
+                          topic: 'admins',
+                          title: 'Test Notification',
+                          body: 'If you see this, FCM is working perfectly!',
+                        );
+                        AppNotifications.showTopSnackBar(context, 'Test notification sent to "admins" topic');
+                      },
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 const Text(
@@ -263,7 +284,7 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                 icon: HugeIcons.strokeRoundedBed,
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const AvdRoomsScreen()),
+                  MaterialPageRoute(builder: (_) => AvdRoomsScreen()),
                 ),
               ),
               _buildGridItem(
@@ -271,7 +292,7 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                 icon: HugeIcons.strokeRoundedHome03,
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const HouseManageScreen()),
+                  MaterialPageRoute(builder: (_) => HouseManageScreen()),
                 ),
               ),
               _buildGridItem(
@@ -651,14 +672,16 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
       query.isEmpty
           ? (isHistory ? 'No historical requests' : 'No new requests')
           : 'No matches found',
+      isHistory: isHistory,
     );
   }
 
   Widget _buildRequestList(
     UserHomeViewModel viewModel,
     List<AccommodationRequest> list,
-    String emptyMsg,
-  ) {
+    String emptyMsg, {
+    required bool isHistory,
+  }) {
     return RefreshIndicator(
       onRefresh: viewModel.fetchRequests,
       color: AppColors.teal,
@@ -699,6 +722,7 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                     child: AdminRequestCard(
                       request: request,
                       parentContext: context,
+                      isHistory: isHistory,
                       onDelete: () async {
                         final success = await viewModel.cancelRequest(
                           request.id,
@@ -919,7 +943,7 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   const Text(
                     'Date Range',
                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
@@ -1062,11 +1086,12 @@ class _UserCard extends StatelessWidget {
   }
 }
 
-class AdminRequestCard extends StatelessWidget {
+class AdminRequestCard extends StatefulWidget {
   final AccommodationRequest request;
   final VoidCallback onDelete;
   final Future<bool> Function(AccommodationRequest) onUpdate;
   final BuildContext parentContext;
+  final bool isHistory;
 
   const AdminRequestCard({
     super.key,
@@ -1074,7 +1099,15 @@ class AdminRequestCard extends StatelessWidget {
     required this.onDelete,
     required this.onUpdate,
     required this.parentContext,
+    this.isHistory = false,
   });
+
+  @override
+  State<AdminRequestCard> createState() => _AdminRequestCardState();
+}
+
+class _AdminRequestCardState extends State<AdminRequestCard> {
+  bool _isExpanded = false;
 
   void _showMemberDetails(BuildContext context) {
     showModalBottomSheet(
@@ -1086,7 +1119,7 @@ class AdminRequestCard extends StatelessWidget {
           color: AppColors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1109,15 +1142,15 @@ class AdminRequestCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: request.members.length,
+                itemCount: widget.request.members.length,
                 separatorBuilder: (_, __) =>
-                    const Divider(height: 24, color: AppColors.border),
+                    const Divider(height: 16, color: AppColors.border),
                 itemBuilder: (context, index) {
-                  final m = request.members[index];
+                  final m = widget.request.members[index];
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1129,7 +1162,7 @@ class AdminRequestCard extends StatelessWidget {
                           color: AppColors.teal,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 2),
                       _detailRow(
                         HugeIcons.strokeRoundedCall02,
                         m.contact,
@@ -1197,7 +1230,7 @@ class AdminRequestCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 2),
                       _detailRow(
                         HugeIcons.strokeRoundedMail01,
                         m.email,
@@ -1218,7 +1251,7 @@ class AdminRequestCard extends StatelessWidget {
                           },
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 2),
                       _detailRow(
                         HugeIcons.strokeRoundedLocation01,
                         'Pradesh: ${m.pradesh}',
@@ -1227,7 +1260,7 @@ class AdminRequestCard extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
             ],
           ),
         ),
@@ -1244,7 +1277,7 @@ class AdminRequestCard extends StatelessWidget {
     return Row(
       children: [
         HugeIcon(icon: iconData, size: 16, color: AppColors.labelGrey),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Expanded(
           child: InkWell(
             onTap: onTap,
@@ -1268,12 +1301,13 @@ class AdminRequestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<UserHomeViewModel>();
     final bool isBusy = viewModel.isUpdating;
+    final request = widget.request;
 
     return InkWell(
       onTap: () => _showMemberDetails(context),
       borderRadius: BorderRadius.circular(18),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(18),
@@ -1303,27 +1337,28 @@ class AdminRequestCard extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    IconButton(
-                      icon: HugeIcon(
-                        icon: HugeIcons.strokeRoundedEdit01,
-                        color: AppColors.teal,
-                        size: 20,
+                    if (!widget.isHistory)
+                      IconButton(
+                        icon: HugeIcon(
+                          icon: HugeIcons.strokeRoundedEdit01,
+                          color: AppColors.teal,
+                          size: 20,
+                        ),
+                        onPressed: isBusy ? null : () => _handleUpdate(context),
                       ),
-                      onPressed: isBusy ? null : () => _handleUpdate(context),
-                    ),
                     IconButton(
                       icon: HugeIcon(
                         icon: HugeIcons.strokeRoundedDelete01,
                         color: AppColors.danger,
                         size: 20,
                       ),
-                      onPressed: isBusy ? null : onDelete,
+                      onPressed: isBusy ? null : widget.onDelete,
                     ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
               request.subtitle,
               style: const TextStyle(
@@ -1332,7 +1367,7 @@ class AdminRequestCard extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Row(
               children: [
                 HugeIcon(
@@ -1380,7 +1415,7 @@ class AdminRequestCard extends StatelessWidget {
               ),
             ],
             if (request.notes.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1391,21 +1426,43 @@ class AdminRequestCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      'Notes: ${request.notes}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.labelGrey,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Notes: ${request.notes}',
+                          maxLines: _isExpanded ? null : 2,
+                          overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.labelGrey,
+                          ),
+                        ),
+                        if (request.notes.length > 50)
+                          GestureDetector(
+                            onTap: () => setState(() => _isExpanded = !_isExpanded),
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                _isExpanded ? 'less' : 'more',
+                                style: const TextStyle(
+                                  color: AppColors.teal,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ],
-            const SizedBox(height: 16),
-            const Divider(height: 1, color: AppColors.border),
             const SizedBox(height: 12),
+            const Divider(height: 1, color: AppColors.border),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -1416,7 +1473,7 @@ class AdminRequestCard extends StatelessWidget {
                     color: AppColors.teal,
                     onTap: () => _showApproveOptions(context),
                     isActive:
-                        request.status.trim().toUpperCase() == 'PENDING' &&
+                        widget.request.status.trim().toUpperCase() == 'PENDING' &&
                         !isBusy,
                   ),
                 ),
@@ -1429,14 +1486,14 @@ class AdminRequestCard extends StatelessWidget {
                     color: AppColors.danger,
                     onTap: () => _handleReject(context),
                     isActive:
-                        request.status.trim().toUpperCase() == 'PENDING' &&
+                        widget.request.status.trim().toUpperCase() == 'PENDING' &&
                         !isBusy,
                   ),
                 ),
               ],
             ),
-            if (request.status.trim().toUpperCase() != 'PENDING' &&
-                !request.status.trim().toUpperCase().contains('REJECTED')) ...[
+            if (widget.request.status.trim().toUpperCase() != 'PENDING' &&
+                !widget.request.status.trim().toUpperCase().contains('REJECTED')) ...[
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
@@ -1460,7 +1517,7 @@ class AdminRequestCard extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => RequestAllocationScreen(request: request),
+        builder: (_) => RequestAllocationScreen(request: widget.request),
       ),
     );
   }
@@ -1476,17 +1533,17 @@ class AdminRequestCard extends StatelessWidget {
     Color bgColor;
     Color textColor;
 
-    final String statusUpper = request.status.trim().toUpperCase();
+    final String statusUpper = widget.request.status.trim().toUpperCase();
     bool isApproved =
         statusUpper == 'APPROVED' ||
         statusUpper.startsWith('APPROVED') ||
         statusUpper == 'ACCEPTED';
 
-    String label = isApproved && !request.isWaitingForAllocation
-        ? request.allocationStatusLabel
-        : (request.status.trim().isEmpty ? 'PENDING' : request.status);
+    String label = isApproved && !widget.request.isWaitingForAllocation
+        ? widget.request.allocationStatusLabel
+        : (widget.request.status.trim().isEmpty ? 'PENDING' : widget.request.status);
 
-    if (request.isPartiallyAllocated) {
+    if (widget.request.isPartiallyAllocated) {
       bgColor = const Color(0xFFFFF3E0); // Light orange for partial
       textColor = const Color(0xFFE65100); // Deep orange
       label = 'Partial Pending';
@@ -1627,12 +1684,12 @@ class AdminRequestCard extends StatelessWidget {
                 subtitle: 'Select specific rooms for each member',
                 icon: Icons.business_rounded,
                 onTap: () async {
-                  final navigator = Navigator.of(parentContext);
-                  final viewModel = parentContext.read<UserHomeViewModel>();
+                  final navigator = Navigator.of(widget.parentContext);
+                  final viewModel = widget.parentContext.read<UserHomeViewModel>();
 
                   if (viewModel.isUpdating) {
                     AppNotifications.showTopSnackBar(
-                      parentContext,
+                      widget.parentContext,
                       'Processing allocation...',
                     );
                   }
@@ -1641,116 +1698,106 @@ class AdminRequestCard extends StatelessWidget {
                     context,
                   ).pop(); // Close bottom sheet using its own context
 
-                  // Loop to allow returning to room selection if confirmation is cancelled
-                  while (true) {
-                    // 1. Select Room
-                    final roomResult = await navigator
-                        .push<Map<String, dynamic>>(
-                          MaterialPageRoute(
-                            builder: (_) => AvdRoomsScreen(
-                              isSelectionMode: true,
-                              checkIn: request.checkIn,
-                              checkOut: request.checkOut,
-                              memberCount: request.members.length,
-                            ),
-                          ),
-                        );
+                  // 1. Open Room Selection
+                  navigator.push(
+                    MaterialPageRoute(
+                      builder: (_) => AvdRoomsScreen(
+                        isSelectionMode: true,
+                        checkIn: widget.request.checkIn,
+                        checkOut: widget.request.checkOut,
+                        memberCount: widget.request.members.length,
+                        onSelect: (Map<String, dynamic> roomResult,
+                            BuildContext selectionContext) async {
+                          final membersList = widget.request.members;
+                          final int membersCount = membersList.length;
+                          List<int> selectedMemberIds = [];
+                          final int roomCapacity =
+                              int.tryParse(
+                                roomResult['remaining_capacity']?.toString() ??
+                                    roomResult['capacity']?.toString() ??
+                                    '0',
+                              ) ??
+                              0;
 
-                    print("DEBUG: Room selection result: $roomResult");
-                    if (roomResult == null)
-                      break; // User cancelled room selection
+                          if (membersCount > 1) {
+                            // 2. Select Members (Multi-select)
+                            final result = await _showMemberSelectionDialog(
+                              selectionContext,
+                              widget.request.members,
+                              roomCapacity: roomCapacity,
+                              roomNo: roomResult['no'],
+                            );
+                            if (result == null || result.isEmpty) return;
+                            selectedMemberIds = result;
+                          } else if (widget.request.members.isNotEmpty) {
+                            // 2. Confirm for single member
+                            final confirm = await _showConfirmDialog(
+                              selectionContext,
+                              'Allocate to Room ${roomResult['no']}?',
+                              'This will allocate the member to this room (Available capacity: $roomCapacity).',
+                            );
+                            if (confirm != true) return;
 
-                    final membersList = request.members;
-                    final int membersCount = membersList.length;
-                    List<int> selectedMemberIds = [];
-                    final int roomCapacity =
-                        int.tryParse(
-                          roomResult['remaining_capacity']?.toString() ??
-                              roomResult['capacity']?.toString() ??
-                              '0',
-                        ) ??
-                        0;
+                            final memberId = widget.request.members.first.id;
+                            if (memberId == null) return;
+                            selectedMemberIds = [memberId];
+                          } else {
+                            return;
+                          }
 
-                    if (membersCount > 1) {
-                      // 2. Select Members (Multi-select)
-                      final result = await _showMemberSelectionDialog(
-                        parentContext,
-                        request.members,
-                        roomCapacity: roomCapacity,
-                        roomNo: roomResult['no'],
-                      );
-                      if (result == null || result.isEmpty) {
-                        continue; // Go back to room selection if member selection is cancelled
-                      }
-                      selectedMemberIds = result;
-                    } else if (request.members.isNotEmpty) {
-                      // 2. Confirm for single member
-                      final confirm = await _showConfirmDialog(
-                        parentContext,
-                        'Allocate to Room ${roomResult['no']}?',
-                        'This will allocate the member to this room (Available capacity: $roomCapacity).',
-                      );
-                      if (confirm != true) {
-                        continue; // Go back to room selection if "No" is clicked
-                      }
+                          if (selectedMemberIds.isNotEmpty) {
+                            // 3. Allocate Selected Members
+                            final allocated = await viewModel.allocateAllMembers(
+                              widget.request.id,
+                              memberIds: selectedMemberIds,
+                              roomId: roomResult['id'],
+                            );
 
-                      final memberId = request.members.first.id;
-                      if (memberId == null) break;
-                      selectedMemberIds = [memberId];
-                    } else {
-                      break;
-                    }
+                            if (allocated) {
+                              final allMemberIds = widget.request.members
+                                  .where((member) => member.id != null)
+                                  .map((member) => member.id!)
+                                  .toSet();
+                              final alreadyAllocatedIds =
+                                  widget.request.activeAllocatedMemberIds;
+                              final nextAllocatedIds = {
+                                ...alreadyAllocatedIds,
+                                ...selectedMemberIds,
+                              };
+                              final isFullyAllocated =
+                                  allMemberIds.isNotEmpty &&
+                                  nextAllocatedIds.length >=
+                                      allMemberIds.length;
 
-                    if (selectedMemberIds.isNotEmpty) {
-                      // 3. Allocate Selected Members
-                      final allocated = await viewModel.allocateAllMembers(
-                        request.id,
-                        memberIds: selectedMemberIds,
-                        roomId: roomResult['id'],
-                      );
+                              if (isFullyAllocated) {
+                                await _updateStatus('APPROVED (AVD)');
+                              }
+                              await viewModel.fetchRequests();
 
-                      if (allocated) {
-                        final allMemberIds = request.members
-                            .where((member) => member.id != null)
-                            .map((member) => member.id!)
-                            .toSet();
-                        final alreadyAllocatedIds =
-                            request.activeAllocatedMemberIds;
-                        final nextAllocatedIds = {
-                          ...alreadyAllocatedIds,
-                          ...selectedMemberIds,
-                        };
-                        final isFullyAllocated =
-                            allMemberIds.isNotEmpty &&
-                            nextAllocatedIds.length >= allMemberIds.length;
-
-                        if (isFullyAllocated) {
-                          await _updateStatus('APPROVED (AVD)');
-                        }
-                        await viewModel.fetchRequests();
-
-                        if (parentContext.mounted) {
-                          AppNotifications.showTopSnackBar(
-                            parentContext,
-                            isFullyAllocated
-                                ? 'Request approved and ${selectedMemberIds.length} members allocated!'
-                                : '${selectedMemberIds.length} members allocated. Remaining members are still pending.',
-                          );
-                        }
-                        break; // Success! Exit loop
-                      } else {
-                        if (parentContext.mounted) {
-                          AppNotifications.showTopSnackBar(
-                            parentContext,
-                            viewModel.lastAllocationError ??
-                                'Failed to allocate members. Please try again.',
-                            isError: true,
-                          );
-                        }
-                        break; // Error! Exit loop (or you could continue if you want to retry room selection)
-                      }
-                    }
-                  }
+                              if (selectionContext.mounted) {
+                                AppNotifications.showTopSnackBar(
+                                  widget.parentContext,
+                                  isFullyAllocated
+                                      ? 'Request approved and ${selectedMemberIds.length} members allocated!'
+                                      : '${selectedMemberIds.length} members allocated. Remaining members are still pending.',
+                                );
+                                Navigator.pop(selectionContext); // Close room selection
+                              }
+                            } else {
+                              if (selectionContext.mounted) {
+                                AppNotifications.showTopSnackBar(
+                                  selectionContext,
+                                  viewModel.lastAllocationError ??
+                                      'Failed to allocate members. Please try again.',
+                                  isError: true,
+                                );
+                              }
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 12),
@@ -1761,74 +1808,69 @@ class AdminRequestCard extends StatelessWidget {
                 icon: Icons.home_work_rounded,
                 onTap: () async {
                   final viewModel = Provider.of<UserHomeViewModel>(
-                    parentContext,
+                    widget.parentContext,
                     listen: false,
                   );
-                  final navigator = Navigator.of(parentContext);
+                  final navigator = Navigator.of(widget.parentContext);
                   Navigator.of(context).pop();
 
-                  // Loop to allow returning to house selection if confirmation is cancelled
-                  while (true) {
-                    // 1. Select House
-                    final selectedHouseData = await navigator
-                        .push<Map<String, dynamic>>(
-                          MaterialPageRoute(
-                            builder: (_) => HouseManageScreen(
-                              isSelectionMode: true,
-                              checkIn: request.checkIn,
-                              checkOut: request.checkOut,
-                              memberCount: request.members.length,
-                            ),
-                          ),
-                        );
+                  // 1. Open House Selection
+                  navigator.push(
+                    MaterialPageRoute(
+                      builder: (_) => HouseManageScreen(
+                        isSelectionMode: true,
+                        checkIn: widget.request.checkIn,
+                        checkOut: widget.request.checkOut,
+                        memberCount: widget.request.members.length,
+                        onSelect: (Map<String, dynamic> selectedHouseData,
+                            BuildContext selectionContext) async {
+                          final houseName =
+                              selectedHouseData['owner_name'] ?? 'Unknown';
+                          final houseId = selectedHouseData['id'];
 
-                    if (selectedHouseData == null) break;
+                          // 2. Confirm
+                          final confirm = await _showConfirmDialog(
+                            selectionContext,
+                            'Allocate to $houseName?',
+                            'This will approve the request and assign it to this house.',
+                          );
 
-                    final houseName =
-                        selectedHouseData['owner_name'] ?? 'Unknown';
-                    final houseId = selectedHouseData['id'];
+                          if (confirm != true) return;
 
-                    // 2. Confirm
-                    final confirm = await _showConfirmDialog(
-                      parentContext,
-                      'Allocate to $houseName?',
-                      'This will approve the request and assign it to this house.',
-                    );
+                          // 3. Allocate via dedicated house-bookings API
+                          final allocated = await viewModel.allocateHouse(
+                            widget.request.id!,
+                            houseId,
+                            checkIn: widget.request.checkIn
+                                .toIso8601String()
+                                .split('T')[0],
+                            checkOut: widget.request.checkOut
+                                .toIso8601String()
+                                .split('T')[0],
+                          );
 
-                    if (confirm != true) {
-                      continue; // Go back to house selection if "No" is clicked
-                    }
-
-                    // 3. Allocate via dedicated house-bookings API
-                    final allocated = await viewModel.allocateHouse(
-                      request.id!,
-                      houseId,
-                      checkIn: request.checkIn.toIso8601String().split('T')[0],
-                      checkOut: request.checkOut.toIso8601String().split(
-                        'T',
-                      )[0],
-                    );
-
-                    if (allocated) {
-                      // 4. Update Status for display
-                      await _updateStatus('APPROVED (Anand - $houseName)');
-                      if (parentContext.mounted) {
-                        AppNotifications.showTopSnackBar(
-                          parentContext,
-                          'Request approved and allocated to $houseName',
-                        );
-                      }
-                      break;
-                    } else if (parentContext.mounted) {
-                      AppNotifications.showTopSnackBar(
-                        parentContext,
-                        viewModel.lastAllocationError ??
-                            'Failed to allocate house. Please try again.',
-                        isError: true,
-                      );
-                      break;
-                    }
-                  }
+                          if (allocated) {
+                            // 4. Update Status for display
+                            await _updateStatus('APPROVED (Anand - $houseName)');
+                            if (selectionContext.mounted) {
+                              AppNotifications.showTopSnackBar(
+                                widget.parentContext,
+                                'Request approved and allocated to $houseName',
+                              );
+                              Navigator.pop(selectionContext); // Close house selection
+                            }
+                          } else if (selectionContext.mounted) {
+                            AppNotifications.showTopSnackBar(
+                              selectionContext,
+                              viewModel.lastAllocationError ??
+                                  'Failed to allocate house. Please try again.',
+                              isError: true,
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 32),
@@ -1855,17 +1897,17 @@ class AdminRequestCard extends StatelessWidget {
           _buildApprovalSummaryItem(
             Icons.login_rounded,
             'Check-in',
-            _formatDate(request.checkIn),
+            _formatDate(widget.request.checkIn),
           ),
           _buildApprovalSummaryItem(
             Icons.logout_rounded,
             'Check-out',
-            _formatDate(request.checkOut),
+            _formatDate(widget.request.checkOut),
           ),
           _buildApprovalSummaryItem(
             Icons.groups_rounded,
             'Members',
-            '${request.members.length}',
+            '${widget.request.members.length}',
           ),
         ],
       ),
@@ -2127,20 +2169,20 @@ class AdminRequestCard extends StatelessWidget {
     }
 
     final finalNotes = AccommodationRequest.composeNotes(
-      userNotes: request.userNotes,
+      userNotes: widget.request.userNotes,
       adminNotes: adminNotes,
     );
 
-    return await onUpdate(
+    return await widget.onUpdate(
       AccommodationRequest(
-        id: request.id,
-        requestName: request.requestName,
+        id: widget.request.id,
+        requestName: widget.request.requestName,
         status: dbStatus,
         notes: finalNotes,
-        checkIn: request.checkIn,
-        checkOut: request.checkOut,
-        members: request.members,
-        notifyEmail: request.notifyEmail,
+        checkIn: widget.request.checkIn,
+        checkOut: widget.request.checkOut,
+        members: widget.request.members,
+        notifyEmail: widget.request.notifyEmail,
       ),
     );
   }
@@ -2247,7 +2289,7 @@ class AdminRequestCard extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (_) =>
-            NewRequestView(requestToEdit: request, onUpdate: onUpdate),
+            NewRequestView(requestToEdit: widget.request, onUpdate: widget.onUpdate),
       ),
     );
   }

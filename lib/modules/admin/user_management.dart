@@ -37,13 +37,20 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     setState(() => _isLoading = true);
     final users = await context.read<UserHomeViewModel>().fetchAllUsers();
     setState(() {
-      // Filter out admins from the list
-      _users = users.where((u) => u['role'] != 'ADMIN').toList();
+      // Filter and sort by id descending to show newest first
+      final filtered = users.where((u) => u['role'] != 'ADMIN').toList();
+      filtered.sort((a, b) {
+        final idA = int.tryParse(a['id']?.toString() ?? '0') ?? 0;
+        final idB = int.tryParse(b['id']?.toString() ?? '0') ?? 0;
+        return idB.compareTo(idA);
+      });
+      _users = filtered;
       _isLoading = false;
     });
   }
 
   void _showAddUserDialog() {
+    final formKey = GlobalKey<FormState>();
     final nameCtrl = TextEditingController();
     final emailCtrl = TextEditingController();
     final phoneCtrl = TextEditingController();
@@ -55,66 +62,105 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       title: 'Add New User',
       icon: Icons.person_add_rounded,
       content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                hintText: 'Full Name',
-              ),
-            ),
-            TextField(
-              controller: emailCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                hintText: 'user@example.com',
-              ),
-            ),
-            TextField(
-              controller: phoneCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Phone',
-                hintText: '10 digit number',
-                counterText: "",
-              ),
-              keyboardType: TextInputType.phone,
-              maxLength: 10,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            ),
-            Consumer<UserHomeViewModel>(
-              builder: (context, vm, child) => DropdownButtonFormField<String>(
-                value: null,
-                items: vm.pradeshList.isEmpty 
-                  ? [const DropdownMenuItem(value: null, child: Text("Loading Pradesh..."))]
-                  : vm.pradeshList
-                    .map((p) => DropdownMenuItem(value: p, child: Text(p)))
-                    .toList(),
-                onChanged: vm.pradeshList.isEmpty ? null : (val) => pradeshCtrl.text = val ?? '',
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: nameCtrl,
                 decoration: const InputDecoration(
-                  labelText: 'Pradesh',
-                  hintText: 'Select Pradesh',
+                  labelText: 'Name',
+                  hintText: 'Full Name',
                 ),
-                validator: (val) => val == null ? 'Please select a pradesh' : null,
+                validator: (val) =>
+                    val == null || val.trim().isEmpty ? 'Enter name' : null,
               ),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: selectedRole,
-              items: ['USER', 'ADMIN']
-                  .map((r) => DropdownMenuItem(value: r, child: Text(r)))
-                  .toList(),
-              onChanged: (val) => selectedRole = val!,
-              decoration: const InputDecoration(labelText: 'Role'),
-            ),
-          ],
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: emailCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  hintText: 'user@example.com',
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) return 'Enter email';
+                  if (!RegExp(
+                    r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
+                  ).hasMatch(val)) {
+                    return 'Enter valid email';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: phoneCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Phone',
+                  hintText: '10 digit number',
+                  counterText: "",
+                ),
+                keyboardType: TextInputType.phone,
+                maxLength: 10,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (val) {
+                  if (val == null || val.isEmpty) return 'Enter phone';
+                  if (val.length != 10) return 'Must be 10 digits';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              Consumer<UserHomeViewModel>(
+                builder:
+                    (context, vm, child) => DropdownButtonFormField<String>(
+                      value: null,
+                      items:
+                          vm.pradeshList.isEmpty
+                              ? [
+                                const DropdownMenuItem(
+                                  value: null,
+                                  child: Text("Loading Pradesh..."),
+                                ),
+                              ]
+                              : vm.pradeshList
+                                  .map(
+                                    (p) => DropdownMenuItem(value: p, child: Text(p)),
+                                  )
+                                  .toList(),
+                      onChanged:
+                          vm.pradeshList.isEmpty
+                              ? null
+                              : (val) => pradeshCtrl.text = val ?? '',
+                      decoration: const InputDecoration(
+                        labelText: 'Pradesh',
+                        hintText: 'Select Pradesh',
+                      ),
+                      validator:
+                          (val) => val == null ? 'Select a pradesh' : null,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedRole,
+                items: ['USER', 'ADMIN']
+                    .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                    .toList(),
+                onChanged: (val) => selectedRole = val!,
+                decoration: const InputDecoration(labelText: 'Role'),
+              ),
+            ],
+          ),
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel', style: TextStyle(color: AppColors.labelGrey)),
+          child: const Text(
+            'Cancel',
+            style: TextStyle(color: AppColors.labelGrey),
+          ),
         ),
         SizedBox(
           width: 120,
@@ -125,17 +171,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               borderRadius: 12,
               isLoading: vm.isUpdating,
               onPressed: () async {
-                if (nameCtrl.text.isEmpty || emailCtrl.text.isEmpty) {
-                  AppNotifications.showTopSnackBar(context, 'Name and Email are required', isError: true);
-                  return;
-                }
+                if (!formKey.currentState!.validate()) return;
 
                 final userData = {
-                  'name': nameCtrl.text,
-                  'email': emailCtrl.text,
-                  'phone': phoneCtrl.text,
+                  'name': nameCtrl.text.trim(),
+                  'email': emailCtrl.text.trim(),
+                  'phone': phoneCtrl.text.trim(),
                   'role': selectedRole,
-                  'pradesh': pradeshCtrl.text,
+                  'pradesh': pradeshCtrl.text.trim(),
                 };
 
                 final success = await vm.addUser(userData);
@@ -153,6 +196,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   void _showEditUserDialog(Map<String, dynamic> user) {
+    final formKey = GlobalKey<FormState>();
     final nameCtrl = TextEditingController(text: user['name']);
     final emailCtrl = TextEditingController(text: user['email']);
     final phoneCtrl = TextEditingController(text: user['phone']);
@@ -164,75 +208,124 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       title: 'Edit User',
       icon: Icons.edit_rounded,
       content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            TextField(
-              controller: emailCtrl,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: phoneCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Phone',
-                counterText: "",
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(labelText: 'Name'),
+                validator: (val) =>
+                    val == null || val.trim().isEmpty ? 'Enter name' : null,
               ),
-              keyboardType: TextInputType.phone,
-              maxLength: 10,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            ),
-            Consumer<UserHomeViewModel>(
-              builder: (context, vm, child) => DropdownButtonFormField<String>(
-                value: vm.pradeshList.contains(user['pradesh']) ? user['pradesh'] : null,
-                items: vm.pradeshList.isEmpty 
-                  ? [DropdownMenuItem(value: user['pradesh'], child: Text(user['pradesh'] ?? "Loading..."))]
-                  : vm.pradeshList
-                    .map((p) => DropdownMenuItem(value: p, child: Text(p)))
-                    .toList(),
-                onChanged: vm.pradeshList.isEmpty ? null : (val) => pradeshCtrl.text = val ?? '',
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: emailCtrl,
+                decoration: const InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) return 'Enter email';
+                  if (!RegExp(
+                    r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
+                  ).hasMatch(val)) {
+                    return 'Enter valid email';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: phoneCtrl,
                 decoration: const InputDecoration(
-                  labelText: 'Pradesh',
-                  hintText: 'Select Pradesh',
+                  labelText: 'Phone',
+                  counterText: "",
                 ),
+                keyboardType: TextInputType.phone,
+                maxLength: 10,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (val) {
+                  if (val == null || val.isEmpty) return 'Enter phone';
+                  if (val.length != 10) return 'Must be 10 digits';
+                  return null;
+                },
               ),
-            ),
-            DropdownButtonFormField<String>(
-              value: selectedRole.toUpperCase(),
-              items: ['USER', 'ADMIN']
-                  .map((r) => DropdownMenuItem(value: r, child: Text(r)))
-                  .toList(),
-              onChanged: (val) => selectedRole = val!,
-              decoration: const InputDecoration(labelText: 'Role'),
-            ),
-          ],
+              const SizedBox(height: 12),
+              Consumer<UserHomeViewModel>(
+                builder:
+                    (context, vm, child) => DropdownButtonFormField<String>(
+                      value:
+                          vm.pradeshList.contains(user['pradesh'])
+                              ? user['pradesh']
+                              : null,
+                      items:
+                          vm.pradeshList.isEmpty
+                              ? [
+                                DropdownMenuItem(
+                                  value: user['pradesh'],
+                                  child: Text(user['pradesh'] ?? "Loading..."),
+                                ),
+                              ]
+                              : vm.pradeshList
+                                  .map(
+                                    (p) => DropdownMenuItem(value: p, child: Text(p)),
+                                  )
+                                  .toList(),
+                      onChanged:
+                          vm.pradeshList.isEmpty
+                              ? null
+                              : (val) => pradeshCtrl.text = val ?? '',
+                      decoration: const InputDecoration(
+                        labelText: 'Pradesh',
+                        hintText: 'Select Pradesh',
+                      ),
+                      validator:
+                          (val) => val == null ? 'Select a pradesh' : null,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedRole.toUpperCase(),
+                items: ['USER', 'ADMIN']
+                    .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                    .toList(),
+                onChanged: (val) => selectedRole = val!,
+                decoration: const InputDecoration(labelText: 'Role'),
+              ),
+            ],
+          ),
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel', style: TextStyle(color: AppColors.labelGrey)),
+          child: const Text(
+            'Cancel',
+            style: TextStyle(color: AppColors.labelGrey),
+          ),
         ),
         SizedBox(
-          width: 100,
+          width: 110,
           child: Consumer<UserHomeViewModel>(
             builder: (context, vm, child) => AppButton(
               text: 'Update',
-              height: 40,
+              height: 44,
               borderRadius: 12,
               isLoading: vm.isUpdating,
               onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+
                 final updatedData = {
-                  'name': nameCtrl.text,
-                  'email': emailCtrl.text,
-                  'phone': phoneCtrl.text,
+                  'name': nameCtrl.text.trim(),
+                  'email': emailCtrl.text.trim(),
+                  'phone': phoneCtrl.text.trim(),
                   'role': selectedRole,
-                  'pradesh': pradeshCtrl.text,
+                  'pradesh': pradeshCtrl.text.trim(),
                 };
-                final success = await vm.updateUserInfo(user['id'].toString(), updatedData);
+                final success = await vm.updateUserInfo(
+                  user['id'].toString(),
+                  updatedData,
+                );
                 if (success) {
                   Navigator.pop(context);
                   _fetchUsers();

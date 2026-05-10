@@ -49,6 +49,9 @@ dependencies:
   supabase_flutter: ^2.6.0
   flutter_launcher_icons: ^0.14.4
   pinput: ^6.0.2
+  firebase_core: ^4.7.0
+  firebase_messaging: ^16.2.0
+  flutter_local_notifications: ^21.0.0
 
 dev_dependencies:
   flutter_test:

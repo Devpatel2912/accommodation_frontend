@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:accommodation/core/utils/color.dart';
+import 'package:accommodation/modules/admin/house_details.dart';
 import 'package:accommodation/modules/admin/new_house.dart';
 import 'package:accommodation/presentation/viewmodels/user_home_viewmodel.dart';
 import 'package:accommodation/presentation/widgets/app_dialog.dart';
@@ -15,12 +16,15 @@ class HouseManageScreen extends StatefulWidget {
   final DateTime? checkOut;
   final int? memberCount;
 
-  const HouseManageScreen({
+  final Function(Map<String, dynamic>, BuildContext)? onSelect;
+
+  HouseManageScreen({
     super.key,
     this.isSelectionMode = false,
     this.checkIn,
     this.checkOut,
     this.memberCount,
+    this.onSelect,
   });
 
   @override
@@ -60,6 +64,12 @@ class _HouseManageScreenState extends State<HouseManageScreen> {
     }
 
     setState(() {
+      // Sort by id descending to show newest first
+      results.sort((a, b) {
+        final idA = int.tryParse(a['id']?.toString() ?? '0') ?? 0;
+        final idB = int.tryParse(b['id']?.toString() ?? '0') ?? 0;
+        return idB.compareTo(idA);
+      });
       _houses = results;
       _isLoading = false;
     });
@@ -262,7 +272,21 @@ class _HouseManageScreenState extends State<HouseManageScreen> {
                                 0.0,
                             onEdit: () => _editHouse(index),
                             onDelete: () => _deleteHouse(index),
-                            onSelect: () => Navigator.pop(context, house),
+                            onSelect: () async {
+                              if (widget.onSelect != null) {
+                                await widget.onSelect!(house, context);
+                              } else {
+                                Navigator.pop(context, house);
+                              }
+                            },
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => HouseDetailsScreen(house: house),
+                                ),
+                              );
+                            },
                             onStatusChanged: (val) async {
                               final houseId = house['id'];
                               if (houseId == null) return;
@@ -433,6 +457,7 @@ class _HouseManageScreenState extends State<HouseManageScreen> {
     required VoidCallback onEdit,
     required VoidCallback onDelete,
     required VoidCallback onSelect,
+    required VoidCallback onTap,
     required Function(bool) onStatusChanged,
     bool isUpdating = false,
   }) {
@@ -448,56 +473,61 @@ class _HouseManageScreenState extends State<HouseManageScreen> {
           ),
         ],
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              imagePath.isNotEmpty
-                  ? (imagePath.startsWith('http')
-                        ? Image.network(
-                            imagePath,
-                            height: 200,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  height: 200,
-                                  color: AppColors.bgGrey,
-                                  child: const Icon(
-                                    Icons.home_rounded,
-                                    size: 40,
-                                    color: AppColors.border,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  child: imagePath.isNotEmpty
+                      ? (imagePath.startsWith('http')
+                          ? Image.network(
+                              imagePath,
+                              height: 200,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                    height: 200,
+                                    color: AppColors.bgGrey,
+                                    child: const Icon(
+                                      Icons.home_rounded,
+                                      size: 40,
+                                      color: AppColors.border,
+                                    ),
                                   ),
-                                ),
-                          )
-                        : Image.file(
-                            File(imagePath),
-                            height: 200,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  height: 200,
-                                  color: AppColors.bgGrey,
-                                  child: const Icon(
-                                    Icons.home_rounded,
-                                    size: 40,
-                                    color: AppColors.border,
+                            )
+                          : Image.file(
+                              File(imagePath),
+                              height: 200,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                    height: 200,
+                                    color: AppColors.bgGrey,
+                                    child: const Icon(
+                                      Icons.home_rounded,
+                                      size: 40,
+                                      color: AppColors.border,
+                                    ),
                                   ),
-                                ),
-                          ))
-                  : Container(
-                      height: 200,
-                      width: double.infinity,
-                      color: AppColors.bgGrey,
-                      child: const Icon(
-                        Icons.home_work_outlined,
-                        size: 40,
-                        color: AppColors.border,
-                      ),
-                    ),
+                            ))
+                      : Container(
+                          height: 200,
+                          width: double.infinity,
+                          color: AppColors.bgGrey,
+                          child: const Icon(
+                            Icons.home_work_outlined,
+                            size: 40,
+                            color: AppColors.border,
+                          ),
+                        ),
+                ),
               if (!widget.isSelectionMode)
                 Positioned(
                   top: 12,
@@ -569,7 +599,7 @@ class _HouseManageScreenState extends State<HouseManageScreen> {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            status.toUpperCase(),
+                            status,
                             style: const TextStyle(
                               color: AppColors.white,
                               fontSize: 10,
@@ -707,6 +737,7 @@ class _HouseManageScreenState extends State<HouseManageScreen> {
           ),
         ],
       ),
+      )
     );
   }
 

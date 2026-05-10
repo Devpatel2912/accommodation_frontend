@@ -15,12 +15,15 @@ class AvdRoomsScreen extends StatefulWidget {
   final DateTime? checkOut;
   final int? memberCount;
 
-  const AvdRoomsScreen({
+  final Function(Map<String, dynamic>, BuildContext)? onSelect;
+
+  AvdRoomsScreen({
     super.key,
     this.isSelectionMode = false,
     this.checkIn,
     this.checkOut,
     this.memberCount,
+    this.onSelect,
   });
 
   @override
@@ -306,18 +309,20 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: widget.isSelectionMode && !isFull
-                                    ? () {
-                                        print(
-                                          "DEBUG: Selecting room ${room.roomNumber} (ID: ${room.id})",
-                                        );
-                                        Navigator.pop(context, {
+                                    ? () async {
+                                        final roomData = {
                                           'id': room.id,
                                           'no': room.roomNumber,
                                           'capacity': room.capacity.toString(),
-                                          'remaining_capacity': room
-                                              .remainingCapacity
-                                              .toString(),
-                                        });
+                                          'remaining_capacity':
+                                              room.remainingCapacity.toString(),
+                                        };
+
+                                        if (widget.onSelect != null) {
+                                          await widget.onSelect!(roomData, context);
+                                        } else {
+                                          Navigator.pop(context, roomData);
+                                        }
                                       }
                                     : null,
                                 borderRadius: BorderRadius.circular(16),
@@ -571,6 +576,8 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
                     fontWeight: FontWeight.bold,
                     color: AppColors.textDark,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -581,12 +588,16 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
                       color: AppColors.labelGrey,
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      'Capacity: $tot/$rem available${occupied > 0 ? ' | Occupied: $occupied' : ''}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.labelGrey,
-                        fontWeight: FontWeight.w500,
+                    Expanded(
+                      child: Text(
+                        'Capacity: $tot/$rem available${occupied > 0 ? ' | Occupied: $occupied' : ''}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.labelGrey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                   ],

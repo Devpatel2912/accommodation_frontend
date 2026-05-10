@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
@@ -28,11 +29,18 @@ import 'package:accommodation/presentation/viewmodels/user_home_viewmodel.dart';
 import 'package:accommodation/presentation/views/splash_view.dart';
 
 import 'package:accommodation/core/services/notification_service.dart';
+import 'package:accommodation/core/services/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Real-time Notification Service
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  
+  // Initialize FCM and Local Notifications
+  await PushNotificationService().init();
+  
+  // Initialize Real-time Notification Service (Supabase)
   await NotificationService().init();
   
   final client = http.Client();

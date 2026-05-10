@@ -56,4 +56,20 @@ class NotificationService {
     _adminChannel?.unsubscribe();
     _userChannel?.unsubscribe();
   }
+
+  Future<void> sendAdminNotification(Map<String, dynamic> payload) async {
+    final channel = Supabase.instance.client.channel('admin-notifications');
+    await channel.sendBroadcastMessage(
+      event: 'new_request',
+      payload: payload,
+    );
+  }
+
+  Future<void> sendUserNotification(String userId, Map<String, dynamic> payload) async {
+    final channel = Supabase.instance.client.channel('user-notifications-$userId');
+    await channel.sendBroadcastMessage(
+      event: 'status_update',
+      payload: payload,
+    );
+  }
 }

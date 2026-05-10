@@ -819,6 +819,24 @@ class RequestDetailsScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
+          if (house?.imageUrl?.isNotEmpty ?? false) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                house!.imageUrl!,
+                height: 180,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  height: 180,
+                  width: double.infinity,
+                  color: AppColors.bgGrey,
+                  child: const Icon(Icons.broken_image_rounded, color: AppColors.hintGrey),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           _buildInfoRow(
             Icons.verified_rounded,
             'Allocation Status',

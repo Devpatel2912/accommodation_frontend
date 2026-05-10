@@ -1,4 +1,5 @@
 import 'package:accommodation/core/services/notification_service.dart';
+import 'package:accommodation/core/services/push_notification_service.dart';
 import 'package:accommodation/data/datasources/request_remote_datasource.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -175,7 +176,21 @@ class UserHomeViewModel extends ChangeNotifier {
     _setupNotifications();
   }
 
-  void _setupNotifications() {
+  void _setupNotifications() async {
+    // 1. Setup FCM Topic Subscriptions
+    final pushService = PushNotificationService();
+    final userId = userData?['id']?.toString();
+    
+    if (userId != null) {
+      await pushService.subscribeToUserTopics(
+        isAdmin: isAdmin,
+        // You can add houseId and roomId here if you have them in userData
+      );
+      // Also subscribe to specific user topic for personal notifications
+      await pushService.subscribeToTopic('user_$userId');
+    }
+
+    // 2. Setup Supabase Real-time (Optional/Legacy)
     final ns = NotificationService();
     ns.unsubscribe(); // Clean up old subscriptions
 
@@ -231,8 +246,33 @@ class UserHomeViewModel extends ChangeNotifier {
     final token = await Prefs.getToken();
     if (token == null || token.isEmpty) return false;
 
+    // Get request details before cancellation to know who to notify
+    AccommodationRequest? requestToNotify;
+    try {
+      requestToNotify = requests.firstWhere((r) => r.id == requestId);
+    } catch (_) {}
+
     final success = await cancelRequestUseCase.execute(requestId, token);
     if (success) {
+      // If admin cancelled, notify the user
+      if (isAdmin && requestToNotify != null && requestToNotify.userId != null) {
+        PushNotificationService().triggerNotification(
+          topic: 'user_${requestToNotify.userId}',
+          title: 'Request Cancelled',
+          body: 'Your accommodation request "${requestToNotify.title}" has been cancelled by the admin.',
+          data: {
+            'type': 'STATUS_UPDATE',
+            'requestId': requestId.toString(),
+            'status': 'CANCELLED',
+          },
+        );
+
+        // Real-time notification
+        NotificationService().sendUserNotification(
+          requestToNotify.userId!.toString(),
+          {'message': 'Your request "${requestToNotify.title}" has been cancelled.'},
+        );
+      }
       await fetchRequests(); // Refresh list
     }
     return success;
@@ -288,6 +328,33 @@ class UserHomeViewModel extends ChangeNotifier {
     );
 
     if (success) {
+      // If admin updated status, notify the user
+      if (isAdmin && status != null) {
+        // Find the request to get user ID
+        AccommodationRequest? req;
+        try {
+          req = requests.firstWhere((r) => r.id == requestId);
+        } catch (_) {}
+
+        if (req != null && req.userId != null) {
+          PushNotificationService().triggerNotification(
+            topic: 'user_${req.userId}',
+            title: 'Status Updated',
+            body: 'Your request "${req.title}" status is now: $status',
+            data: {
+              'type': 'STATUS_UPDATE',
+              'requestId': requestId.toString(),
+              'status': status,
+            },
+          );
+
+          // Real-time notification
+          NotificationService().sendUserNotification(
+            req.userId!.toString(),
+            {'message': 'Your request "${req.title}" status is now: $status'},
+          );
+        }
+      }
       await fetchRequests();
     }
 
@@ -366,6 +433,30 @@ class UserHomeViewModel extends ChangeNotifier {
     );
 
     if (success) {
+      // Notify the user about room allocation
+      AccommodationRequest? req;
+      try {
+        req = requests.firstWhere((r) => r.id == requestId);
+      } catch (_) {}
+
+      if (req != null && req.userId != null) {
+        PushNotificationService().triggerNotification(
+          topic: 'user_${req.userId}',
+          title: 'Room Allocated!',
+          body: 'A member has been allocated a room for your request: ${req.title}',
+          data: {
+            'type': 'ALLOCATION',
+            'requestId': requestId.toString(),
+            'status': 'ALLOCATED',
+          },
+        );
+
+        // Real-time notification
+        NotificationService().sendUserNotification(
+          req.userId!.toString(),
+          {'message': 'A member has been allocated a room for your request: ${req.title}'},
+        );
+      }
       await fetchRequests();
     } else {
       lastAllocationError = error;
@@ -558,7 +649,32 @@ class UserHomeViewModel extends ChangeNotifier {
       checkOut: checkOut,
     );
 
-    if (!success) {
+    if (success) {
+      // Notify user about house allocation
+      AccommodationRequest? req;
+      try {
+        req = requests.firstWhere((r) => r.id == requestId);
+      } catch (_) {}
+
+      if (req != null && req.userId != null) {
+        PushNotificationService().triggerNotification(
+          topic: 'user_${req.userId}',
+          title: 'House Allocated!',
+          body: 'An entire house has been allocated for your request: ${req.title}',
+          data: {
+            'type': 'ALLOCATION',
+            'requestId': requestId.toString(),
+            'status': 'HOUSE_ALLOCATED',
+          },
+        );
+
+        // Real-time notification
+        NotificationService().sendUserNotification(
+          req.userId!.toString(),
+          {'message': 'An entire house has been allocated for your request: ${req.title}'},
+        );
+      }
+    } else {
       lastAllocationError = error;
     }
 
