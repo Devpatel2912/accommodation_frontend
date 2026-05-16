@@ -280,7 +280,7 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
             childAspectRatio: 1.1,
             children: [
               _buildGridItem(
-                title: 'Room Manage',
+                title: 'Manage Room',
                 icon: HugeIcons.strokeRoundedBed,
                 onTap: () => Navigator.push(
                   context,
@@ -288,7 +288,7 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                 ),
               ),
               _buildGridItem(
-                title: 'House Manage',
+                title: 'Manage House',
                 icon: HugeIcons.strokeRoundedHome03,
                 onTap: () => Navigator.push(
                   context,
@@ -296,7 +296,7 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                 ),
               ),
               _buildGridItem(
-                title: 'User Manage',
+                title: 'Manage User',
                 icon: HugeIcons.strokeRoundedUserGroup,
                 onTap: () => Navigator.push(
                   context,
@@ -306,7 +306,7 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                 ),
               ),
               _buildGridItem(
-                title: 'Member Manage',
+                title: 'Manage Member',
                 icon: HugeIcons.strokeRoundedUserMultiple,
                 onTap: () => Navigator.push(
                   context,
@@ -1148,7 +1148,7 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: widget.request.members.length,
                 separatorBuilder: (_, __) =>
-                    const Divider(height: 16, color: AppColors.border),
+                    const Divider(height: 10, color: AppColors.border),
                 itemBuilder: (context, index) {
                   final m = widget.request.members[index];
                   return Column(

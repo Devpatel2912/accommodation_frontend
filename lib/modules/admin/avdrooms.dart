@@ -195,7 +195,7 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
           final viewModel = context.read<UserHomeViewModel>();
           final success = await viewModel.deleteRoom(room.id);
           if (success && mounted) {
-            AppNotifications.showTopSnackBar(
+              AppNotifications.showTopSnackBar(
               context,
               'Room deleted successfully',
             );
