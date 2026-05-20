@@ -1390,19 +1390,27 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
                 _buildStatusBadge(),
               ],
             ),
-            if (request.status.contains('(')) ...[
+            if (request.status.contains('(') || request.hasAnyAllocation) ...[
               const SizedBox(height: 12),
               Row(
                 children: [
                   HugeIcon(
-                    icon: HugeIcons.strokeRoundedLocation01,
+                    icon: request.hasRoomAllocation
+                        ? HugeIcons.strokeRoundedDoor01
+                        : (request.hasHouseAllocation
+                            ? HugeIcons.strokeRoundedHome01
+                            : HugeIcons.strokeRoundedLocation01),
                     size: 14,
                     color: AppColors.teal,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Location: ${_extractLocation(request.status)}',
+                      request.hasRoomAllocation
+                          ? 'Room: ${request.activeRoomAllocation?.roomNumber ?? ''}'
+                          : (request.hasHouseAllocation
+                              ? 'House: ${request.activeHouseDetails?.ownerName ?? ''}'
+                              : 'Location: ${_extractLocation(request.status)}'),
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 13,
@@ -1672,7 +1680,7 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Which department/admin is approving this?',
+                'Approve and forward to the responsible SubAdmin',
                 style: TextStyle(fontSize: 14, color: AppColors.labelGrey),
               ),
               const SizedBox(height: 20),
@@ -1680,197 +1688,41 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
               const SizedBox(height: 24),
               _buildOptionTile(
                 context,
-                label: 'Room-wise Allocation (AVD)',
-                subtitle: 'Select specific rooms for each member',
+                label: 'Forward to AVD (Room Allocation)',
+                subtitle: 'SubAdmin AVD will allocate rooms for members',
                 icon: Icons.business_rounded,
                 onTap: () async {
-                  final navigator = Navigator.of(widget.parentContext);
+                  Navigator.of(context).pop(); // Close bottom sheet
                   final viewModel = widget.parentContext.read<UserHomeViewModel>();
 
-                  if (viewModel.isUpdating) {
+                  // Only update the status — no allocation at this step
+                  final success = await _updateStatus('APPROVED (AVD)');
+                  if (success && widget.parentContext.mounted) {
                     AppNotifications.showTopSnackBar(
                       widget.parentContext,
-                      'Processing allocation...',
+                      'Request approved and forwarded to SubAdmin (AVD) for room allocation.',
                     );
                   }
-
-                  Navigator.of(
-                    context,
-                  ).pop(); // Close bottom sheet using its own context
-
-                  // 1. Open Room Selection
-                  navigator.push(
-                    MaterialPageRoute(
-                      builder: (_) => AvdRoomsScreen(
-                        isSelectionMode: true,
-                        checkIn: widget.request.checkIn,
-                        checkOut: widget.request.checkOut,
-                        memberCount: widget.request.members.length,
-                        onSelect: (Map<String, dynamic> roomResult,
-                            BuildContext selectionContext) async {
-                          final membersList = widget.request.members;
-                          final int membersCount = membersList.length;
-                          List<int> selectedMemberIds = [];
-                          final int roomCapacity =
-                              int.tryParse(
-                                roomResult['remaining_capacity']?.toString() ??
-                                    roomResult['capacity']?.toString() ??
-                                    '0',
-                              ) ??
-                              0;
-
-                          if (membersCount > 1) {
-                            // 2. Select Members (Multi-select)
-                            final result = await _showMemberSelectionDialog(
-                              selectionContext,
-                              widget.request.members,
-                              roomCapacity: roomCapacity,
-                              roomNo: roomResult['no'],
-                            );
-                            if (result == null || result.isEmpty) return;
-                            selectedMemberIds = result;
-                          } else if (widget.request.members.isNotEmpty) {
-                            // 2. Confirm for single member
-                            final confirm = await _showConfirmDialog(
-                              selectionContext,
-                              'Allocate to Room ${roomResult['no']}?',
-                              'This will allocate the member to this room (Available capacity: $roomCapacity).',
-                            );
-                            if (confirm != true) return;
-
-                            final memberId = widget.request.members.first.id;
-                            if (memberId == null) return;
-                            selectedMemberIds = [memberId];
-                          } else {
-                            return;
-                          }
-
-                          if (selectedMemberIds.isNotEmpty) {
-                            // 3. Allocate Selected Members
-                            final allocated = await viewModel.allocateAllMembers(
-                              widget.request.id,
-                              memberIds: selectedMemberIds,
-                              roomId: roomResult['id'],
-                            );
-
-                            if (allocated) {
-                              final allMemberIds = widget.request.members
-                                  .where((member) => member.id != null)
-                                  .map((member) => member.id!)
-                                  .toSet();
-                              final alreadyAllocatedIds =
-                                  widget.request.activeAllocatedMemberIds;
-                              final nextAllocatedIds = {
-                                ...alreadyAllocatedIds,
-                                ...selectedMemberIds,
-                              };
-                              final isFullyAllocated =
-                                  allMemberIds.isNotEmpty &&
-                                  nextAllocatedIds.length >=
-                                      allMemberIds.length;
-
-                              if (isFullyAllocated) {
-                                await _updateStatus('APPROVED (AVD)');
-                              }
-                              await viewModel.fetchRequests();
-
-                              if (selectionContext.mounted) {
-                                AppNotifications.showTopSnackBar(
-                                  widget.parentContext,
-                                  isFullyAllocated
-                                      ? 'Request approved and ${selectedMemberIds.length} members allocated!'
-                                      : '${selectedMemberIds.length} members allocated. Remaining members are still pending.',
-                                );
-                                Navigator.pop(selectionContext); // Close room selection
-                              }
-                            } else {
-                              if (selectionContext.mounted) {
-                                AppNotifications.showTopSnackBar(
-                                  selectionContext,
-                                  viewModel.lastAllocationError ??
-                                      'Failed to allocate members. Please try again.',
-                                  isError: true,
-                                );
-                              }
-                            }
-                          }
-                        },
-                      ),
-                    ),
-                  );
                 },
               ),
               const SizedBox(height: 12),
               _buildOptionTile(
                 context,
-                label: 'Assign Whole House (Anand)',
-                subtitle: 'Allocate entire house to this request',
+                label: 'Forward to Anand (House Allocation)',
+                subtitle: 'SubAdmin Anand will allocate a house for this request',
                 icon: Icons.home_work_rounded,
                 onTap: () async {
-                  final viewModel = Provider.of<UserHomeViewModel>(
-                    widget.parentContext,
-                    listen: false,
-                  );
-                  final navigator = Navigator.of(widget.parentContext);
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(); // Close bottom sheet
+                  final viewModel = widget.parentContext.read<UserHomeViewModel>();
 
-                  // 1. Open House Selection
-                  navigator.push(
-                    MaterialPageRoute(
-                      builder: (_) => HouseManageScreen(
-                        isSelectionMode: true,
-                        checkIn: widget.request.checkIn,
-                        checkOut: widget.request.checkOut,
-                        memberCount: widget.request.members.length,
-                        onSelect: (Map<String, dynamic> selectedHouseData,
-                            BuildContext selectionContext) async {
-                          final houseName =
-                              selectedHouseData['owner_name'] ?? 'Unknown';
-                          final houseId = selectedHouseData['id'];
-
-                          // 2. Confirm
-                          final confirm = await _showConfirmDialog(
-                            selectionContext,
-                            'Allocate to $houseName?',
-                            'This will approve the request and assign it to this house.',
-                          );
-
-                          if (confirm != true) return;
-
-                          // 3. Allocate via dedicated house-bookings API
-                          final allocated = await viewModel.allocateHouse(
-                            widget.request.id!,
-                            houseId,
-                            checkIn: widget.request.checkIn
-                                .toIso8601String()
-                                .split('T')[0],
-                            checkOut: widget.request.checkOut
-                                .toIso8601String()
-                                .split('T')[0],
-                          );
-
-                          if (allocated) {
-                            // 4. Update Status for display
-                            await _updateStatus('APPROVED (Anand - $houseName)');
-                            if (selectionContext.mounted) {
-                              AppNotifications.showTopSnackBar(
-                                widget.parentContext,
-                                'Request approved and allocated to $houseName',
-                              );
-                              Navigator.pop(selectionContext); // Close house selection
-                            }
-                          } else if (selectionContext.mounted) {
-                            AppNotifications.showTopSnackBar(
-                              selectionContext,
-                              viewModel.lastAllocationError ??
-                                  'Failed to allocate house. Please try again.',
-                              isError: true,
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  );
+                  // Only update the status — no allocation at this step
+                  final success = await _updateStatus('APPROVED (ANAND)');
+                  if (success && widget.parentContext.mounted) {
+                    AppNotifications.showTopSnackBar(
+                      widget.parentContext,
+                      'Request approved and forwarded to SubAdmin (Anand) for house allocation.',
+                    );
+                  }
                 },
               ),
               const SizedBox(height: 32),

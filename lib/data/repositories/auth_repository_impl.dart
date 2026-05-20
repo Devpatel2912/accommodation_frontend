@@ -24,4 +24,14 @@ class AuthRepositoryImpl {
   Future<Map<String, dynamic>?> getProfile(String token) async {
     return await remote.getProfile(token);
   }
+
+  Future<Map<String, dynamic>?> loginWithPassword({
+    required String email,
+    required String password,
+  }) async {
+    return await remote.loginWithPassword(
+      email: email,
+      password: password,
+    );
+  }
 }

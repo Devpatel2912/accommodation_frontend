@@ -1,6 +1,6 @@
 class ApiConfig {
-  static const String baseUrl = "http://27.116.52.24:8072";
-  // static const String baseUrl = "http://192.168.29.73:5001"; //dyulabs
+  // static const String baseUrl = "http://27.116.52.24:8072";
+  static const String baseUrl = "http://192.168.29.73:5000"; //dyulabs
   // static const String baseUrl = "http://10.29.88.155:5001";// my phone
   // static const String baseUrl = "http://192.168.201.130:5001"; //AVD
   static const String notificationBaseUrl =
@@ -26,6 +26,8 @@ class ApiConfig {
   static const String allocationItems = "/admin/allocation-items";
   static const String memberAllocations = "/admin/member-allocations";
   static const String upload = "/upload";
+  static const String register = "/auth/register";
+  static const String subadminRequests = "/subadmin/requests";
   static const String googleMapsApiKey =
       "AIzaSyAWbWNOIN2NVRIHbjhflvEh4JDr2ZkJ3xA";
 

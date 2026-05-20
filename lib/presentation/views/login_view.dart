@@ -11,6 +11,11 @@ import 'package:accommodation/domain/usecases/verify_otp_usecase.dart';
 import 'package:accommodation/core/utils/color.dart';
 import 'package:accommodation/presentation/views/otp_view.dart';
 import 'package:accommodation/domain/usecases/request_otp_usecase.dart';
+import 'package:accommodation/modules/admin/admin_home_screen.dart' as accommodation_admin;
+import 'package:accommodation/modules/subadmin/subadmin_home_screen.dart' as accommodation_subadmin;
+import 'package:accommodation/modules/user/userhomescreen.dart' as accommodation_user;
+
+import 'package:accommodation/core/utils/prefs.dart';
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
 
@@ -23,7 +28,7 @@ class LoginView extends StatelessWidget {
         final repo = AuthRepositoryImpl(remote);
         final requestUseCase = RequestOtpUseCase(repo);
         final verifyUseCase = VerifyOtpUseCase(repo);
-        return LoginViewModel(requestUseCase, verifyUseCase);
+        return LoginViewModel(requestUseCase, verifyUseCase, repo);
       },
       child: const _LoginScreenContent(),
     );
@@ -158,6 +163,39 @@ class _LoginCard extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
+          // ── Mode Toggle ──
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () {
+                  if (viewModel.isPasswordLogin) viewModel.toggleLoginMode();
+                },
+                child: Text(
+                  'Login with OTP',
+                  style: TextStyle(
+                    color: !viewModel.isPasswordLogin ? AppColors.teal : AppColors.hintGrey,
+                    fontWeight: !viewModel.isPasswordLogin ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ),
+              const Text('|', style: TextStyle(color: AppColors.hintGrey)),
+              TextButton(
+                onPressed: () {
+                  if (!viewModel.isPasswordLogin) viewModel.toggleLoginMode();
+                },
+                child: Text(
+                  'Login with Password',
+                  style: TextStyle(
+                    color: viewModel.isPasswordLogin ? AppColors.teal : AppColors.hintGrey,
+                    fontWeight: viewModel.isPasswordLogin ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
           // ── Email section ──
           _SectionCard(
             child: Column(
@@ -166,12 +204,83 @@ class _LoginCard extends StatelessWidget {
                 // const _FieldLabel('Email'),
                 const SizedBox(height: 8),
                 _EmailField(controller: viewModel.emailController),
+                if (viewModel.isPasswordLogin) ...[
+                  const SizedBox(height: 14),
+                  _PasswordField(controller: viewModel.passwordController),
+                ],
                 const SizedBox(height: 14),
-                _SendOtpButton(viewModel: viewModel),
+                _ActionButton(viewModel: viewModel),
               ],
             ),
           ),
           const SizedBox(height: 18),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Password input ──────────────────────────────────────────────────
+class _PasswordField extends StatefulWidget {
+  const _PasswordField({required this.controller});
+  final TextEditingController controller;
+
+  @override
+  State<_PasswordField> createState() => _PasswordFieldState();
+}
+
+class _PasswordFieldState extends State<_PasswordField> {
+  bool _obscureText = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        border: Border.all(color: AppColors.border, width: 1.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            child: Icon(Icons.lock_outline_rounded, color: AppColors.teal, size: 18),
+          ),
+          Expanded(
+            child: TextField(
+              controller: widget.controller,
+              obscureText: _obscureText,
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.textDark,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Password',
+                hintStyle: const TextStyle(
+                  color: AppColors.hintGrey,
+                  fontSize: 14,
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 13,
+                  horizontal: 0,
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                    color: AppColors.hintGrey,
+                    size: 18,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureText = !_obscureText;
+                    });
+                  },
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -265,9 +374,9 @@ class _EmailField extends StatelessWidget {
   }
 }
 
-// ── Send OTP button ──────────────────────────────────────────────
-class _SendOtpButton extends StatelessWidget {
-  const _SendOtpButton({required this.viewModel});
+// ── Action button ──────────────────────────────────────────────
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({required this.viewModel});
   final LoginViewModel viewModel;
 
   @override
@@ -278,18 +387,39 @@ class _SendOtpButton extends StatelessWidget {
         onPressed: viewModel.isLoading
             ? null
             : () async {
-          await viewModel.sendOtp();
-          if (!context.mounted) return;
-          if (viewModel.isOtpSent) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ChangeNotifierProvider.value(
-                  value: viewModel,
-                  child: const OtpView(),
+          if (viewModel.isPasswordLogin) {
+            final success = await viewModel.loginWithPassword();
+            if (!context.mounted) return;
+            if (success) {
+              final role = await Prefs.getRole();
+              Widget homeScreen;
+              if (role == 'ADMIN') {
+                homeScreen = const accommodation_admin.AdminHomeScreen();
+              } else if (role == 'SUBADMIN') {
+                homeScreen = const accommodation_subadmin.SubAdminHomeScreen();
+              } else {
+                homeScreen = const accommodation_user.UserHomeScreen();
+              }
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => homeScreen),
+                (route) => false,
+              );
+            }
+          } else {
+            await viewModel.sendOtp();
+            if (!context.mounted) return;
+            if (viewModel.isOtpSent) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ChangeNotifierProvider.value(
+                    value: viewModel,
+                    child: const OtpView(),
+                  ),
                 ),
-              ),
-            );
+              );
+            }
           }
         },
         style: ElevatedButton.styleFrom(
@@ -311,19 +441,19 @@ class _SendOtpButton extends StatelessWidget {
             strokeWidth: 2,
           ),
         )
-            : const Row(
+            : Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Send OTP',
-              style: TextStyle(
+              viewModel.isPasswordLogin ? 'Login' : 'Send OTP',
+              style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.2,
               ),
             ),
-            SizedBox(width: 8),
-            Icon(Icons.arrow_forward_rounded, size: 16),
+            const SizedBox(width: 8),
+            const Icon(Icons.arrow_forward_rounded, size: 16),
           ],
         ),
       ),

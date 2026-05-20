@@ -1,6 +1,8 @@
 import 'package:accommodation/core/services/notification_service.dart';
 import 'package:accommodation/core/services/push_notification_service.dart';
 import 'package:accommodation/data/datasources/request_remote_datasource.dart';
+import 'package:accommodation/data/datasources/auth_remote_datasource.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:accommodation/domain/models/accommodation_request.dart';
@@ -100,6 +102,8 @@ class UserHomeViewModel extends ChangeNotifier {
   }
 
   bool get isAdmin => userData?['role']?.toString().toUpperCase() == 'ADMIN';
+  bool get isSubAdmin => userData?['role']?.toString().toUpperCase() == 'SUBADMIN';
+  String? get subAdminType => userData?['sub_admin_type']?.toString().toUpperCase();
 
   void setSearchQuery(String query) {
     searchQuery = query;
@@ -131,6 +135,9 @@ class UserHomeViewModel extends ChangeNotifier {
     if (isAdmin) {
       print("DEBUG: Calling getAllRequestsUseCase");
       fetched = await getAllRequestsUseCase.execute(token);
+    } else if (isSubAdmin && subAdminType != null) {
+      print("DEBUG: Calling getSubAdminRequests for $subAdminType");
+      fetched = await remoteDataSource.getSubAdminRequests(token, subAdminType!);
     } else {
       print("DEBUG: Calling getMyRequestsUseCase");
       fetched = await getMyRequestsUseCase.execute(token);
@@ -932,6 +939,33 @@ class UserHomeViewModel extends ChangeNotifier {
     isUpdating = false;
     notifyListeners();
     return success;
+  }
+
+  /// Register a new user with role (ADMIN, SUBADMIN, USER)
+  Future<(bool, String?)> registerUser({
+    required String name,
+    required String email,
+    required String phone,
+    required String role,
+    String? subAdminType,
+    String? pradesh,
+  }) async {
+    isUpdating = true;
+    notifyListeners();
+
+    final authRemote = AuthRemoteDataSource(http.Client());
+    final (success, error) = await authRemote.registerUser(
+      name: name,
+      email: email,
+      phone: phone,
+      role: role,
+      subAdminType: subAdminType,
+      pradesh: pradesh,
+    );
+
+    isUpdating = false;
+    notifyListeners();
+    return (success, error);
   }
 
   void clearData() {

@@ -57,7 +57,6 @@ class AuthRemoteDataSource {
       return null;
     }
   }
-
   Future<Map<String, dynamic>?> getProfile(String token) async {
     try {
       final url = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.profile}');
@@ -79,6 +78,76 @@ class AuthRemoteDataSource {
     } catch (e) {
       print("GET PROFILE ERROR: $e");
       return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> loginWithPassword({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final url = Uri.parse('${ApiConfig.baseUrl}/auth/login');
+      final response = await client.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          "email": email,
+          "password": password,
+        }),
+      );
+
+      print("LOGIN WITH PASSWORD RESPONSE: ${response.statusCode} ${response.body}");
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print("LOGIN WITH PASSWORD ERROR: $e");
+      return null;
+    }
+  }
+
+  /// Register a new user with role (ADMIN, SUBADMIN, USER)
+  /// For SUBADMIN, also pass sub_admin_type (AVD or ANAND)
+  Future<(bool, String?)> registerUser({
+    required String name,
+    required String email,
+    required String phone,
+    required String role,
+    String? subAdminType,
+    String? pradesh,
+  }) async {
+    try {
+      final url = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.register}');
+      final payload = {
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'role': role.toUpperCase(),
+        if (subAdminType != null) 'sub_admin_type': subAdminType.toUpperCase(),
+        if (pradesh != null && pradesh.isNotEmpty) 'pradesh': pradesh,
+      };
+
+      print("REGISTER USER PAYLOAD: $payload");
+
+      final response = await client.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(payload),
+      );
+
+      print("REGISTER USER RESPONSE: ${response.statusCode} ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return (true, null);
+      } else {
+        final errorData = json.decode(response.body);
+        return (false, errorData['error']?.toString() ?? 'Registration failed');
+      }
+    } catch (e) {
+      print("REGISTER USER ERROR: $e");
+      return (false, e.toString());
     }
   }
 }

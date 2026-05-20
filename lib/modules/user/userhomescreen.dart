@@ -456,8 +456,13 @@ class RequestDetailsScreen extends StatelessWidget {
   }
 
   String get _statusDisplayLabel {
+    final status = request.status.trim().toUpperCase();
     if (request.isPartiallyAllocated) {
       return 'Partial Pending';
+    }
+    // Hide internal routing status from users — show PENDING until SubAdmin allocates
+    if ((status.startsWith('APPROVED (')) && request.isWaitingForAllocation) {
+      return 'PENDING';
     }
     if (_isProcessedStatus && !request.isWaitingForAllocation) {
       return request.allocationStatusLabel;
@@ -1160,8 +1165,12 @@ class _RequestSummaryCard extends StatelessWidget {
     final isProcessedStatus =
         status == 'ACCEPTED' || status.startsWith('APPROVED');
     final isPartialPending = request.isPartiallyAllocated;
+    // Hide internal routing status from users — show PENDING until SubAdmin allocates
+    final isInternalRouting = status.startsWith('APPROVED (') && request.isWaitingForAllocation;
     final statusDisplayLabel = isPartialPending
         ? 'Partial Pending'
+        : isInternalRouting
+        ? 'PENDING'
         : isProcessedStatus && !request.isWaitingForAllocation
         ? request.allocationStatusLabel
         : request.status;
@@ -1243,7 +1252,7 @@ class _RequestSummaryCard extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: isPartialPending
+                    color: isPartialPending || isInternalRouting
                         ? AppColors.pendingBg
                         : isProcessedStatus
                         ? AppColors.tealLight
@@ -1263,7 +1272,7 @@ class _RequestSummaryCard extends StatelessWidget {
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.5,
-                      color: isPartialPending
+                    color: isPartialPending || isInternalRouting
                           ? AppColors.pendingText
                           : isProcessedStatus
                           ? AppColors.teal

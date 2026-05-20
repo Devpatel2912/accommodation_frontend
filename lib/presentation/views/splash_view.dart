@@ -4,6 +4,7 @@ import 'package:accommodation/core/utils/prefs.dart';
 import 'package:accommodation/presentation/views/login_view.dart';
 import 'package:accommodation/modules/admin/admin_home_screen.dart';
 import 'package:accommodation/modules/user/userhomescreen.dart';
+import 'package:accommodation/modules/subadmin/subadmin_home_screen.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -42,20 +43,21 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
     if (!mounted) return;
 
     final token = await Prefs.getToken();
-    final isAdmin = await Prefs.isAdmin();
+    final role = await Prefs.getRole();
 
     if (token != null && token.isNotEmpty) {
-      if (isAdmin) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const AdminHomeScreen()),
-        );
+      Widget homeScreen;
+      if (role == 'ADMIN') {
+        homeScreen = const AdminHomeScreen();
+      } else if (role == 'SUBADMIN') {
+        homeScreen = const SubAdminHomeScreen();
       } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const UserHomeScreen()),
-        );
+        homeScreen = const UserHomeScreen();
       }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => homeScreen),
+      );
     } else {
       Navigator.pushReplacement(
         context,

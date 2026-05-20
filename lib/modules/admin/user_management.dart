@@ -56,101 +56,127 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     final phoneCtrl = TextEditingController();
     final pradeshCtrl = TextEditingController();
     String selectedRole = 'USER';
+    String? selectedSubAdminType;
 
     AppDialog.show(
       context: context,
       title: 'Add New User',
       icon: Icons.person_add_rounded,
-      content: SingleChildScrollView(
-        child: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  hintText: 'Full Name',
+      content: StatefulBuilder(
+        builder: (context, setDialogState) => SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    hintText: 'Full Name',
+                  ),
+                  validator: (val) =>
+                      val == null || val.trim().isEmpty ? 'Enter name' : null,
                 ),
-                validator: (val) =>
-                    val == null || val.trim().isEmpty ? 'Enter name' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: emailCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  hintText: 'user@example.com',
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: emailCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    hintText: 'user@example.com',
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) return 'Enter email';
+                    if (!RegExp(
+                      r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
+                    ).hasMatch(val)) {
+                      return 'Enter valid email';
+                    }
+                    return null;
+                  },
                 ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) return 'Enter email';
-                  if (!RegExp(
-                    r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
-                  ).hasMatch(val)) {
-                    return 'Enter valid email';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: phoneCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Phone',
-                  hintText: '10 digit number',
-                  counterText: "",
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: phoneCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Phone',
+                    hintText: '10 digit number',
+                    counterText: "",
+                  ),
+                  keyboardType: TextInputType.phone,
+                  maxLength: 10,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  validator: (val) {
+                    if (val == null || val.isEmpty) return 'Enter phone';
+                    if (val.length != 10) return 'Must be 10 digits';
+                    return null;
+                  },
                 ),
-                keyboardType: TextInputType.phone,
-                maxLength: 10,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (val) {
-                  if (val == null || val.isEmpty) return 'Enter phone';
-                  if (val.length != 10) return 'Must be 10 digits';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              Consumer<UserHomeViewModel>(
-                builder:
-                    (context, vm, child) => DropdownButtonFormField<String>(
-                      value: null,
-                      items:
-                          vm.pradeshList.isEmpty
-                              ? [
-                                const DropdownMenuItem(
-                                  value: null,
-                                  child: Text("Loading Pradesh..."),
-                                ),
-                              ]
-                              : vm.pradeshList
-                                  .map(
-                                    (p) => DropdownMenuItem(value: p, child: Text(p)),
-                                  )
-                                  .toList(),
-                      onChanged:
-                          vm.pradeshList.isEmpty
-                              ? null
-                              : (val) => pradeshCtrl.text = val ?? '',
-                      decoration: const InputDecoration(
-                        labelText: 'Pradesh',
-                        hintText: 'Select Pradesh',
+                const SizedBox(height: 12),
+                Consumer<UserHomeViewModel>(
+                  builder:
+                      (context, vm, child) => DropdownButtonFormField<String>(
+                        value: null,
+                        items:
+                            vm.pradeshList.isEmpty
+                                ? [
+                                  const DropdownMenuItem(
+                                    value: null,
+                                    child: Text("Loading Pradesh..."),
+                                  ),
+                                ]
+                                : vm.pradeshList
+                                    .map(
+                                      (p) => DropdownMenuItem(value: p, child: Text(p)),
+                                    )
+                                    .toList(),
+                        onChanged:
+                            vm.pradeshList.isEmpty
+                                ? null
+                                : (val) => pradeshCtrl.text = val ?? '',
+                        decoration: const InputDecoration(
+                          labelText: 'Pradesh',
+                          hintText: 'Select Pradesh',
+                        ),
+                        validator:
+                            (val) => val == null ? 'Select a pradesh' : null,
                       ),
-                      validator:
-                          (val) => val == null ? 'Select a pradesh' : null,
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: selectedRole,
+                  items: ['USER', 'ADMIN', 'SUBADMIN']
+                      .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                      .toList(),
+                  onChanged: (val) {
+                    setDialogState(() {
+                      selectedRole = val!;
+                      if (val != 'SUBADMIN') selectedSubAdminType = null;
+                    });
+                  },
+                  decoration: const InputDecoration(labelText: 'Role'),
+                ),
+                if (selectedRole == 'SUBADMIN') ...[
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: selectedSubAdminType,
+                    items: ['AVD', 'ANAND']
+                        .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                        .toList(),
+                    onChanged: (val) =>
+                        setDialogState(() => selectedSubAdminType = val),
+                    decoration: const InputDecoration(
+                      labelText: 'SubAdmin Type',
+                      hintText: 'Select AVD or ANAND',
                     ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: selectedRole,
-                items: ['USER', 'ADMIN']
-                    .map((r) => DropdownMenuItem(value: r, child: Text(r)))
-                    .toList(),
-                onChanged: (val) => selectedRole = val!,
-                decoration: const InputDecoration(labelText: 'Role'),
-              ),
-            ],
+                    validator: (val) => selectedRole == 'SUBADMIN' && val == null
+                        ? 'Select SubAdmin type'
+                        : null,
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),
@@ -179,6 +205,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   'phone': phoneCtrl.text.trim(),
                   'role': selectedRole,
                   'pradesh': pradeshCtrl.text.trim(),
+                  if (selectedRole == 'SUBADMIN' && selectedSubAdminType != null)
+                    'sub_admin_type': selectedSubAdminType,
                 };
 
                 final success = await vm.addUser(userData);
@@ -202,97 +230,124 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     final phoneCtrl = TextEditingController(text: user['phone']);
     final pradeshCtrl = TextEditingController(text: user['pradesh']);
     String selectedRole = user['role'] ?? 'USER';
+    String? selectedSubAdminType = user['sub_admin_type'];
 
     AppDialog.show(
       context: context,
       title: 'Edit User',
       icon: Icons.edit_rounded,
-      content: SingleChildScrollView(
-        child: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(labelText: 'Name'),
-                validator: (val) =>
-                    val == null || val.trim().isEmpty ? 'Enter name' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: emailCtrl,
-                decoration: const InputDecoration(labelText: 'Email'),
-                keyboardType: TextInputType.emailAddress,
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) return 'Enter email';
-                  if (!RegExp(
-                    r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
-                  ).hasMatch(val)) {
-                    return 'Enter valid email';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: phoneCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Phone',
-                  counterText: "",
+      content: StatefulBuilder(
+        builder: (context, setDialogState) => SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                  validator: (val) =>
+                      val == null || val.trim().isEmpty ? 'Enter name' : null,
                 ),
-                keyboardType: TextInputType.phone,
-                maxLength: 10,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (val) {
-                  if (val == null || val.isEmpty) return 'Enter phone';
-                  if (val.length != 10) return 'Must be 10 digits';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              Consumer<UserHomeViewModel>(
-                builder:
-                    (context, vm, child) => DropdownButtonFormField<String>(
-                      value:
-                          vm.pradeshList.contains(user['pradesh'])
-                              ? user['pradesh']
-                              : null,
-                      items:
-                          vm.pradeshList.isEmpty
-                              ? [
-                                DropdownMenuItem(
-                                  value: user['pradesh'],
-                                  child: Text(user['pradesh'] ?? "Loading..."),
-                                ),
-                              ]
-                              : vm.pradeshList
-                                  .map(
-                                    (p) => DropdownMenuItem(value: p, child: Text(p)),
-                                  )
-                                  .toList(),
-                      onChanged:
-                          vm.pradeshList.isEmpty
-                              ? null
-                              : (val) => pradeshCtrl.text = val ?? '',
-                      decoration: const InputDecoration(
-                        labelText: 'Pradesh',
-                        hintText: 'Select Pradesh',
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: emailCtrl,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) return 'Enter email';
+                    if (!RegExp(
+                      r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
+                    ).hasMatch(val)) {
+                      return 'Enter valid email';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: phoneCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Phone',
+                    counterText: "",
+                  ),
+                  keyboardType: TextInputType.phone,
+                  maxLength: 10,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  validator: (val) {
+                    if (val == null || val.isEmpty) return 'Enter phone';
+                    if (val.length != 10) return 'Must be 10 digits';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                Consumer<UserHomeViewModel>(
+                  builder:
+                      (context, vm, child) => DropdownButtonFormField<String>(
+                        value:
+                            vm.pradeshList.contains(user['pradesh'])
+                                ? user['pradesh']
+                                : null,
+                        items:
+                            vm.pradeshList.isEmpty
+                                ? [
+                                  DropdownMenuItem(
+                                    value: user['pradesh'],
+                                    child: Text(user['pradesh'] ?? "Loading..."),
+                                  ),
+                                ]
+                                : vm.pradeshList
+                                    .map(
+                                      (p) => DropdownMenuItem(value: p, child: Text(p)),
+                                    )
+                                    .toList(),
+                        onChanged:
+                            vm.pradeshList.isEmpty
+                                ? null
+                                : (val) => pradeshCtrl.text = val ?? '',
+                        decoration: const InputDecoration(
+                          labelText: 'Pradesh',
+                          hintText: 'Select Pradesh',
+                        ),
+                        validator:
+                            (val) => val == null ? 'Select a pradesh' : null,
                       ),
-                      validator:
-                          (val) => val == null ? 'Select a pradesh' : null,
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: selectedRole.toUpperCase(),
+                  items: ['USER', 'ADMIN', 'SUBADMIN']
+                      .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                      .toList(),
+                  onChanged: (val) {
+                    setDialogState(() {
+                      selectedRole = val!;
+                      if (val != 'SUBADMIN') selectedSubAdminType = null;
+                    });
+                  },
+                  decoration: const InputDecoration(labelText: 'Role'),
+                ),
+                if (selectedRole.toUpperCase() == 'SUBADMIN') ...[
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: selectedSubAdminType?.toUpperCase(),
+                    items: ['AVD', 'ANAND']
+                        .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                        .toList(),
+                    onChanged: (val) =>
+                        setDialogState(() => selectedSubAdminType = val),
+                    decoration: const InputDecoration(
+                      labelText: 'SubAdmin Type',
+                      hintText: 'Select AVD or ANAND',
                     ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: selectedRole.toUpperCase(),
-                items: ['USER', 'ADMIN']
-                    .map((r) => DropdownMenuItem(value: r, child: Text(r)))
-                    .toList(),
-                onChanged: (val) => selectedRole = val!,
-                decoration: const InputDecoration(labelText: 'Role'),
-              ),
-            ],
+                    validator: (val) =>
+                        selectedRole.toUpperCase() == 'SUBADMIN' && val == null
+                            ? 'Select SubAdmin type'
+                            : null,
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),
@@ -321,6 +376,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   'phone': phoneCtrl.text.trim(),
                   'role': selectedRole,
                   'pradesh': pradeshCtrl.text.trim(),
+                  if (selectedRole.toUpperCase() == 'SUBADMIN' &&
+                      selectedSubAdminType != null)
+                    'sub_admin_type': selectedSubAdminType,
                 };
                 final success = await vm.updateUserInfo(
                   user['id'].toString(),
@@ -463,18 +521,24 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                         decoration: BoxDecoration(
                                           color: user['role'] == 'ADMIN'
                                               ? AppColors.teal.withOpacity(0.12)
-                                              : AppColors.border.withOpacity(0.3),
+                                              : user['role'] == 'SUBADMIN'
+                                                  ? const Color(0xFFFFF3E0)
+                                                  : AppColors.border.withOpacity(0.3),
                                           borderRadius: BorderRadius.circular(5),
                                         ),
                                         child: Text(
-                                          user['role'] ?? 'USER',
+                                          user['role'] == 'SUBADMIN'
+                                              ? 'SUBADMIN (${user['sub_admin_type'] ?? ''})'
+                                              : (user['role'] ?? 'USER'),
                                           style: TextStyle(
                                             fontSize: 8.5,
                                             fontWeight: FontWeight.w800,
                                             letterSpacing: 0.4,
                                             color: user['role'] == 'ADMIN'
                                                 ? AppColors.teal
-                                                : AppColors.labelGrey,
+                                                : user['role'] == 'SUBADMIN'
+                                                    ? const Color(0xFFE65100)
+                                                    : AppColors.labelGrey,
                                           ),
                                         ),
                                       ),

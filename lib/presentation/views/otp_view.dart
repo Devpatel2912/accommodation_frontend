@@ -8,6 +8,7 @@ import 'package:accommodation/core/utils/prefs.dart';
 import 'package:accommodation/modules/admin/admin_home_screen.dart';
 import 'package:accommodation/modules/user/userhomescreen.dart';
 import 'package:accommodation/presentation/viewmodels/login_viewmodel.dart';
+import 'package:accommodation/modules/subadmin/subadmin_home_screen.dart';
 import 'package:pinput/pinput.dart';
 
 class OtpView extends StatefulWidget {
@@ -244,14 +245,18 @@ class _VerifyButton extends StatelessWidget {
                 if (!context.mounted) return;
 
                 if (success) {
-                  final isAdmin = await Prefs.isAdmin();
+                  final role = await Prefs.getRole();
+                  Widget homeScreen;
+                  if (role == 'ADMIN') {
+                    homeScreen = const AdminHomeScreen();
+                  } else if (role == 'SUBADMIN') {
+                    homeScreen = const SubAdminHomeScreen();
+                  } else {
+                    homeScreen = const UserHomeScreen();
+                  }
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => isAdmin
-                          ? const AdminHomeScreen()
-                          : const UserHomeScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => homeScreen),
                     (route) => false,
                   );
                 }

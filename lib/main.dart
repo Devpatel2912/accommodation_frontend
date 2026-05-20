@@ -68,7 +68,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => LoginViewModel(requestOtpUseCase, verifyOtpUseCase)),
+        ChangeNotifierProvider(create: (_) => LoginViewModel(requestOtpUseCase, verifyOtpUseCase, authRepository)),
         ChangeNotifierProvider(
           create: (_) => UserHomeViewModel(
             getMyRequestsUseCase,

@@ -1013,4 +1013,38 @@ class RequestRemoteDataSource {
       return null;
     }
   }
+
+  /// Fetch requests that are approved and forwarded to a specific SubAdmin type
+  Future<List<AccommodationRequest>> getSubAdminRequests(
+    String token,
+    String subAdminType,
+  ) async {
+    try {
+      final url = Uri.parse(
+        '${ApiConfig.baseUrl}${ApiConfig.subadminRequests}?type=$subAdminType',
+      );
+      print("GET SUBADMIN REQUESTS URL: $url");
+      final response = await client.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print("GET SUBADMIN REQUESTS RESPONSE: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> body = json.decode(response.body);
+        final List data = body['requests'] ?? [];
+        return data
+            .map((json) => AccommodationRequest.fromJson(json))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      print("GET SUBADMIN REQUESTS ERROR: $e");
+      return [];
+    }
+  }
 }
