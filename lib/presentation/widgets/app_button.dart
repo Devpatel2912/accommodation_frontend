@@ -1,5 +1,6 @@
 import 'package:accommodation/core/utils/color.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 class AppButton extends StatelessWidget {
   final String text;
@@ -10,7 +11,7 @@ class AppButton extends StatelessWidget {
   final double? width;
   final double height;
   final double borderRadius;
-  final IconData? icon;
+  final dynamic icon;
   final bool useGradient;
 
   const AppButton({
@@ -78,7 +79,9 @@ class AppButton extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (icon != null) ...[
-                      Icon(icon, size: 20, color: textColor ?? Colors.white),
+                      icon is IconData
+                          ? Icon(icon as IconData, size: 20, color: textColor ?? Colors.white)
+                          : HugeIcon(icon: icon, size: 20, color: textColor ?? Colors.white),
                       const SizedBox(width: 10),
                     ],
                     Text(
@@ -106,7 +109,7 @@ class AppSecondaryButton extends StatelessWidget {
   final double? width;
   final double height;
   final double borderRadius;
-  final IconData? icon;
+  final dynamic icon;
 
   const AppSecondaryButton({
     super.key,
@@ -158,7 +161,9 @@ class AppSecondaryButton extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (icon != null) ...[
-                    Icon(icon, size: 20, color: color ?? AppColors.teal),
+                    icon is IconData
+                        ? Icon(icon as IconData, size: 20, color: color ?? AppColors.teal)
+                        : HugeIcon(icon: icon, size: 20, color: color ?? AppColors.teal),
                     const SizedBox(width: 10),
                   ],
                   Text(

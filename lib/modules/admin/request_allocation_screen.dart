@@ -351,10 +351,10 @@ class _RequestAllocationScreenState extends State<RequestAllocationScreen> {
                 ),
                 child: Text(
                   request.isPartiallyAllocated
-                      ? 'Partial Pending'
+                      ? 'APPROVED'
                       : request.isWaitingForAllocation
                       ? request.status
-                      : request.allocationStatusLabel,
+                      : 'APPROVED',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -442,25 +442,26 @@ class _RequestAllocationScreenState extends State<RequestAllocationScreen> {
         children: [
           Row(
             children: [
-              Expanded(
-                child: _buildAllocationButton(
-                  label: 'Allocate to AVD Room',
-                  icon: Icons.meeting_room_rounded,
-                  onTap: selectedMemberIds.isEmpty || !canModifyAllocation
-                      ? null
-                      : () => _allocateToRoom(context, viewModel, request),
+              if (viewModel.subAdminType?.toUpperCase() == 'AVD')
+                Expanded(
+                  child: _buildAllocationButton(
+                    label: 'Allocate to AVD Room',
+                    icon: Icons.meeting_room_rounded,
+                    onTap: selectedMemberIds.isEmpty || !canModifyAllocation
+                        ? null
+                        : () => _allocateToRoom(context, viewModel, request),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildAllocationButton(
-                  label: 'Allocate to House',
-                  icon: Icons.other_houses_rounded,
-                  onTap: selectedMemberIds.isEmpty || !canModifyAllocation
-                      ? null
-                      : () => _allocateToHouse(context, viewModel, request),
+              if (viewModel.subAdminType?.toUpperCase() == 'ANAND')
+                Expanded(
+                  child: _buildAllocationButton(
+                    label: 'Allocate to House',
+                    icon: Icons.other_houses_rounded,
+                    onTap: selectedMemberIds.isEmpty || !canModifyAllocation
+                        ? null
+                        : () => _allocateToHouse(context, viewModel, request),
+                  ),
                 ),
-              ),
             ],
           ),
           if (viewModel.isUpdating)

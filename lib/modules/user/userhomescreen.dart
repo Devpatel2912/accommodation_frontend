@@ -457,15 +457,12 @@ class RequestDetailsScreen extends StatelessWidget {
 
   String get _statusDisplayLabel {
     final status = request.status.trim().toUpperCase();
-    if (request.isPartiallyAllocated) {
-      return 'Partial Pending';
-    }
     // Hide internal routing status from users — show PENDING until SubAdmin allocates
     if ((status.startsWith('APPROVED (')) && request.isWaitingForAllocation) {
       return 'PENDING';
     }
-    if (_isProcessedStatus && !request.isWaitingForAllocation) {
-      return request.allocationStatusLabel;
+    if (_isProcessedStatus && request.hasAnyAllocation) {
+      return 'APPROVED';
     }
     return request.status;
   }
@@ -518,7 +515,7 @@ class RequestDetailsScreen extends StatelessWidget {
                       },
               ),
             ),
-          if (request.status == "ACCEPTED" && request.isFullyAllocated)
+          if (_isProcessedStatus && request.isFullyAllocated)
             Consumer<UserHomeViewModel>(
               builder: (context, viewModel, child) => viewModel.isForwarding
                   ? const Center(
@@ -580,7 +577,7 @@ class RequestDetailsScreen extends StatelessWidget {
           children: [
             _buildStatusCard(),
             const SizedBox(height: 20),
-            if (request.status == "ACCEPTED" && request.isFullyAllocated) ...[
+            if (_isProcessedStatus && request.isFullyAllocated) ...[
               _buildForwardButton(context),
               const SizedBox(height: 20),
             ],
@@ -695,7 +692,7 @@ class RequestDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildStatusCard() {
-    final isPartialPending = request.isPartiallyAllocated;
+    final isAllocatedApproved = _isProcessedStatus && request.hasAnyAllocation;
 
     return Container(
       width: double.infinity,
@@ -710,16 +707,12 @@ class RequestDetailsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: isPartialPending
-                  ? AppColors.pendingBg
-                  : _isProcessedStatus
+              color: isAllocatedApproved || _isProcessedStatus
                   ? AppColors.tealLight
                   : AppColors.pendingBg,
               borderRadius: BorderRadius.circular(99),
               border: Border.all(
-                color: isPartialPending
-                    ? AppColors.pendingBorder
-                    : _isProcessedStatus
+                color: isAllocatedApproved || _isProcessedStatus
                     ? AppColors.teal.withOpacity(0.2)
                     : AppColors.pendingBorder,
               ),
@@ -727,9 +720,7 @@ class RequestDetailsScreen extends StatelessWidget {
             child: Text(
               _statusDisplayLabel,
               style: TextStyle(
-                color: isPartialPending
-                    ? AppColors.pendingText
-                    : _isProcessedStatus
+                color: isAllocatedApproved || _isProcessedStatus
                     ? AppColors.teal
                     : AppColors.pendingText,
                 fontWeight: FontWeight.w700,
@@ -740,8 +731,8 @@ class RequestDetailsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            isPartialPending
-                ? 'Partial Pending'
+            isAllocatedApproved
+                ? 'Approved'
                 : _isProcessedStatus
                 ? (request.isWaitingForAllocation
                       ? 'Allocation in Progress'
@@ -755,8 +746,8 @@ class RequestDetailsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            isPartialPending
-                ? 'Some members are still waiting for allocation'
+            isAllocatedApproved
+                ? 'Your allocation details are available'
                 : _isProcessedStatus
                 ? (request.isWaitingForAllocation
                       ? 'Room allocation is pending for this request'
@@ -836,7 +827,10 @@ class RequestDetailsScreen extends StatelessWidget {
                   height: 180,
                   width: double.infinity,
                   color: AppColors.bgGrey,
-                  child: const Icon(Icons.broken_image_rounded, color: AppColors.hintGrey),
+                  child: const Icon(
+                    Icons.broken_image_rounded,
+                    color: AppColors.hintGrey,
+                  ),
                 ),
               ),
             ),
@@ -1164,15 +1158,14 @@ class _RequestSummaryCard extends StatelessWidget {
     final status = request.status.trim().toUpperCase();
     final isProcessedStatus =
         status == 'ACCEPTED' || status.startsWith('APPROVED');
-    final isPartialPending = request.isPartiallyAllocated;
     // Hide internal routing status from users — show PENDING until SubAdmin allocates
-    final isInternalRouting = status.startsWith('APPROVED (') && request.isWaitingForAllocation;
-    final statusDisplayLabel = isPartialPending
-        ? 'Partial Pending'
-        : isInternalRouting
+    final isInternalRouting =
+        status.startsWith('APPROVED (') && request.isWaitingForAllocation;
+    final isAllocatedApproved = isProcessedStatus && request.hasAnyAllocation;
+    final statusDisplayLabel = isInternalRouting
         ? 'PENDING'
-        : isProcessedStatus && !request.isWaitingForAllocation
-        ? request.allocationStatusLabel
+        : isAllocatedApproved
+        ? 'APPROVED'
         : request.status;
 
     return InkWell(
@@ -1252,14 +1245,14 @@ class _RequestSummaryCard extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: isPartialPending || isInternalRouting
+                    color: isInternalRouting
                         ? AppColors.pendingBg
                         : isProcessedStatus
                         ? AppColors.tealLight
                         : AppColors.pendingBg,
                     borderRadius: BorderRadius.circular(999),
                     border: Border.all(
-                      color: isPartialPending
+                      color: isInternalRouting
                           ? AppColors.pendingBorder
                           : isProcessedStatus
                           ? AppColors.teal.withOpacity(0.2)
@@ -1272,7 +1265,7 @@ class _RequestSummaryCard extends StatelessWidget {
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.5,
-                    color: isPartialPending || isInternalRouting
+                      color: isInternalRouting
                           ? AppColors.pendingText
                           : isProcessedStatus
                           ? AppColors.teal

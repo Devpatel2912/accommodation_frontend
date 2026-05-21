@@ -29,6 +29,7 @@ import 'package:accommodation/domain/usecases/allocate_member_usecase.dart';
 import 'package:accommodation/domain/usecases/get_available_rooms_usecase.dart';
 import 'package:accommodation/presentation/viewmodels/user_home_viewmodel.dart';
 import 'package:accommodation/modules/admin/request_allocation_screen.dart';
+import 'package:accommodation/modules/admin/request_detail_screen.dart';
 import 'package:accommodation/modules/admin/user_management.dart';
 import 'package:accommodation/modules/admin/member_management.dart';
 import 'package:accommodation/presentation/widgets/app_button.dart';
@@ -256,7 +257,10 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                           title: 'Test Notification',
                           body: 'If you see this, FCM is working perfectly!',
                         );
-                        AppNotifications.showTopSnackBar(context, 'Test notification sent to "admins" topic');
+                        AppNotifications.showTopSnackBar(
+                          context,
+                          'Test notification sent to "admins" topic',
+                        );
                       },
                     ),
                   ],
@@ -1256,6 +1260,36 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
                         HugeIcons.strokeRoundedLocation01,
                         'Pradesh: ${m.pradesh}',
                       ),
+                      Builder(
+                        builder: (context) {
+                          final alloc = widget.request.findAllocationForMember(
+                            m.id,
+                          );
+                          if (alloc != null) {
+                            String allocationText = 'Allocated';
+                            dynamic allocIcon =
+                                HugeIcons.strokeRoundedCheckmarkCircle01;
+
+                            if (alloc.roomNumber != null) {
+                              allocationText = 'Room: ${alloc.roomNumber}';
+                              allocIcon = HugeIcons.strokeRoundedDoor01;
+                            } else if (alloc.houseDetails != null) {
+                              allocationText =
+                                  'House: ${alloc.houseDetails!.ownerName}';
+                              allocIcon = HugeIcons.strokeRoundedHome01;
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: _detailRow(
+                                allocIcon,
+                                'Allocation: $allocationText',
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
                     ],
                   );
                 },
@@ -1304,7 +1338,18 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
     final request = widget.request;
 
     return InkWell(
-      onTap: () => _showMemberDetails(context),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => RequestDetailScreen(
+              requestId: request.id ?? 0,
+              initialRequest: request,
+              isHistory: widget.isHistory,
+            ),
+          ),
+        );
+      },
       borderRadius: BorderRadius.circular(18),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -1398,8 +1443,8 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
                     icon: request.hasRoomAllocation
                         ? HugeIcons.strokeRoundedDoor01
                         : (request.hasHouseAllocation
-                            ? HugeIcons.strokeRoundedHome01
-                            : HugeIcons.strokeRoundedLocation01),
+                              ? HugeIcons.strokeRoundedHome01
+                              : HugeIcons.strokeRoundedLocation01),
                     size: 14,
                     color: AppColors.teal,
                   ),
@@ -1409,8 +1454,8 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
                       request.hasRoomAllocation
                           ? 'Room: ${request.activeRoomAllocation?.roomNumber ?? ''}'
                           : (request.hasHouseAllocation
-                              ? 'House: ${request.activeHouseDetails?.ownerName ?? ''}'
-                              : 'Location: ${_extractLocation(request.status)}'),
+                                ? 'House: ${request.activeHouseDetails?.ownerName ?? ''}'
+                                : 'Location: ${_extractLocation(request.status)}'),
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 13,
@@ -1440,7 +1485,9 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
                         Text(
                           'Notes: ${request.notes}',
                           maxLines: _isExpanded ? null : 2,
-                          overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                          overflow: _isExpanded
+                              ? TextOverflow.visible
+                              : TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -1449,7 +1496,8 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
                         ),
                         if (request.notes.length > 50)
                           GestureDetector(
-                            onTap: () => setState(() => _isExpanded = !_isExpanded),
+                            onTap: () =>
+                                setState(() => _isExpanded = !_isExpanded),
                             child: Padding(
                               padding: const EdgeInsets.only(top: 4),
                               child: Text(
@@ -1468,51 +1516,40 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
                 ],
               ),
             ],
-            const SizedBox(height: 12),
-            const Divider(height: 1, color: AppColors.border),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(
-                    context,
-                    label: 'Approve',
-                    icon: HugeIcons.strokeRoundedCheckmarkCircle01,
-                    color: AppColors.teal,
-                    onTap: () => _showApproveOptions(context),
-                    isActive:
-                        widget.request.status.trim().toUpperCase() == 'PENDING' &&
-                        !isBusy,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildActionButton(
-                    context,
-                    label: 'Reject',
-                    icon: HugeIcons.strokeRoundedCancelCircle,
-                    color: AppColors.danger,
-                    onTap: () => _handleReject(context),
-                    isActive:
-                        widget.request.status.trim().toUpperCase() == 'PENDING' &&
-                        !isBusy,
-                  ),
-                ),
-              ],
-            ),
-            if (widget.request.status.trim().toUpperCase() != 'PENDING' &&
-                !widget.request.status.trim().toUpperCase().contains('REJECTED')) ...[
+            if (!widget.isHistory) ...[
               const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: _buildActionButton(
-                  context,
-                  label: 'Manage Member Allocation',
-                  icon: HugeIcons.strokeRoundedUserGroup,
-                  color: AppColors.teal,
-                  onTap: () => _openAllocation(context),
-                  isActive: true,
-                ),
+              const Divider(height: 1, color: AppColors.border),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildActionButton(
+                      context,
+                      label: 'Approve',
+                      icon: HugeIcons.strokeRoundedCheckmarkCircle01,
+                      color: AppColors.teal,
+                      onTap: () => _showApproveOptions(context),
+                      isActive:
+                          widget.request.status.trim().toUpperCase() ==
+                              'PENDING' &&
+                          !isBusy,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildActionButton(
+                      context,
+                      label: 'Reject',
+                      icon: HugeIcons.strokeRoundedCancelCircle,
+                      color: AppColors.danger,
+                      onTap: () => _handleReject(context),
+                      isActive:
+                          widget.request.status.trim().toUpperCase() ==
+                              'PENDING' &&
+                          !isBusy,
+                    ),
+                  ),
+                ],
               ),
             ],
           ],
@@ -1547,15 +1584,13 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
         statusUpper.startsWith('APPROVED') ||
         statusUpper == 'ACCEPTED';
 
-    String label = isApproved && !widget.request.isWaitingForAllocation
-        ? widget.request.allocationStatusLabel
-        : (widget.request.status.trim().isEmpty ? 'PENDING' : widget.request.status);
+    String label = isApproved && widget.request.hasAnyAllocation
+        ? 'APPROVED'
+        : (widget.request.status.trim().isEmpty
+              ? 'PENDING'
+              : widget.request.status);
 
-    if (widget.request.isPartiallyAllocated) {
-      bgColor = const Color(0xFFFFF3E0); // Light orange for partial
-      textColor = const Color(0xFFE65100); // Deep orange
-      label = 'Partial Pending';
-    } else if (isApproved) {
+    if (isApproved) {
       bgColor = AppColors.tealLight;
       textColor = AppColors.teal;
     } else if (statusUpper == 'REJECTED') {
@@ -1693,7 +1728,8 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
                 icon: Icons.business_rounded,
                 onTap: () async {
                   Navigator.of(context).pop(); // Close bottom sheet
-                  final viewModel = widget.parentContext.read<UserHomeViewModel>();
+                  final viewModel = widget.parentContext
+                      .read<UserHomeViewModel>();
 
                   // Only update the status — no allocation at this step
                   final success = await _updateStatus('APPROVED (AVD)');
@@ -1709,11 +1745,13 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
               _buildOptionTile(
                 context,
                 label: 'Forward to Anand (House Allocation)',
-                subtitle: 'SubAdmin Anand will allocate a house for this request',
+                subtitle:
+                    'SubAdmin Anand will allocate a house for this request',
                 icon: Icons.home_work_rounded,
                 onTap: () async {
                   Navigator.of(context).pop(); // Close bottom sheet
-                  final viewModel = widget.parentContext.read<UserHomeViewModel>();
+                  final viewModel = widget.parentContext
+                      .read<UserHomeViewModel>();
 
                   // Only update the status — no allocation at this step
                   final success = await _updateStatus('APPROVED (ANAND)');
@@ -2140,8 +2178,10 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
     await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            NewRequestView(requestToEdit: widget.request, onUpdate: widget.onUpdate),
+        builder: (_) => NewRequestView(
+          requestToEdit: widget.request,
+          onUpdate: widget.onUpdate,
+        ),
       ),
     );
   }

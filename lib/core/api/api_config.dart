@@ -1,7 +1,7 @@
 class ApiConfig {
-  // static const String baseUrl = "http://27.116.52.24:8072";
-  static const String baseUrl = "http://192.168.29.73:5000"; //dyulabs
-  // static const String baseUrl = "http://10.29.88.155:5001";// my phone
+  static const String baseUrl = "http://27.116.52.24:8072";
+  // static const String baseUrl = "http://192.168.29.73:5000"; //dyulabs
+  // static const String baseUrl = "http://10.228.69.155:5000";// my phone
   // static const String baseUrl = "http://192.168.201.130:5001"; //AVD
   static const String notificationBaseUrl =
       "http://27.116.52.24:8072/notifications"; // Integrated FCM backend

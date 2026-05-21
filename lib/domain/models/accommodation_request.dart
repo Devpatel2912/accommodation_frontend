@@ -238,9 +238,7 @@ class AccommodationRequest {
           [],
       notes: json['notes'] ?? '',
       notifyEmail: json['notify_email'] ?? '',
-      status: (json['status'] == null || json['status'] == 'null')
-          ? 'PENDING'
-          : json['status'],
+      status: _parseStatus(json),
       allocations: _parseAllocations(json['allocations'] ?? json['allocation']),
       houseDetails: _parseHouseDetails(
         json['house_bookings'] ?? json['house_booking'],
@@ -251,6 +249,20 @@ class AccommodationRequest {
           json['user']?['pradesh']?.toString() ??
           '',
     );
+  }
+
+  static String _parseStatus(Map<String, dynamic> json) {
+    String status = (json['status'] == null || json['status'] == 'null') ? 'PENDING' : json['status'].toString();
+    String notes = json['notes']?.toString() ?? '';
+    
+    if (status == 'ACCEPTED') {
+      if (notes.contains('APPROVED (AVD)')) {
+        return 'APPROVED (AVD)';
+      } else if (notes.contains('APPROVED (ANAND)')) {
+        return 'APPROVED (ANAND)';
+      }
+    }
+    return status;
   }
 
   static HouseAllocationDetails? _parseHouseDetails(dynamic houseBookingJson) {
