@@ -163,101 +163,6 @@ class _LoginCard extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // ── Mode Toggle ──
-          Container(
-            height: 46,
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: AppColors.bgGrey.withOpacity(0.18),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border.withOpacity(0.8)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () {
-                      if (viewModel.isPasswordLogin) viewModel.toggleLoginMode();
-                    },
-                    borderRadius: BorderRadius.circular(8),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeInOut,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: !viewModel.isPasswordLogin ? AppColors.white : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: !viewModel.isPasswordLogin
-                            ? [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.06),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                )
-                              ]
-                            : [],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Login with OTP',
-                            style: TextStyle(
-                              color: !viewModel.isPasswordLogin ? AppColors.teal : AppColors.hintGrey,
-                              fontWeight: !viewModel.isPasswordLogin ? FontWeight.w600 : FontWeight.normal,
-                              fontSize: 13.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: InkWell(
-                    onTap: () {
-                      if (!viewModel.isPasswordLogin) viewModel.toggleLoginMode();
-                    },
-                    borderRadius: BorderRadius.circular(8),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeInOut,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: viewModel.isPasswordLogin ? AppColors.white : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: viewModel.isPasswordLogin
-                            ? [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.06),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                )
-                              ]
-                            : [],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Login with Password',
-                            style: TextStyle(
-                              color: viewModel.isPasswordLogin ? AppColors.teal : AppColors.hintGrey,
-                              fontWeight: viewModel.isPasswordLogin ? FontWeight.w600 : FontWeight.normal,
-                              fontSize: 13.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
 
           // ── Email section ──
           _SectionCard(
@@ -267,10 +172,7 @@ class _LoginCard extends StatelessWidget {
                 // const _FieldLabel('Email'),
                 const SizedBox(height: 8),
                 _EmailField(controller: viewModel.emailController),
-                if (viewModel.isPasswordLogin) ...[
-                  const SizedBox(height: 14),
-                  _PasswordField(controller: viewModel.passwordController),
-                ],
+
                 const SizedBox(height: 14),
                 _ActionButton(viewModel: viewModel),
               ],

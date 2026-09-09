@@ -39,7 +39,7 @@ class AddedMember {
       name: json['name'] ?? '',
       contact: json['contact'] ?? '',
       email: json['email'] ?? '',
-      pradesh: json['pradesh'] ?? '',
+      pradesh: _parsePradesh(json['pradesh']),
     );
   }
 
@@ -438,4 +438,11 @@ class AccommodationRequest {
 DateTime? _parseDate(dynamic value) {
   if (value == null) return null;
   return DateTime.tryParse(value.toString());
+}
+
+String _parsePradesh(dynamic value) {
+  if (value == null) return '';
+  if (value is String) return value;
+  if (value is Map) return value['name']?.toString() ?? '';
+  return value.toString();
 }

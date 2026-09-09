@@ -7,6 +7,7 @@ import 'package:accommodation/presentation/widgets/app_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 import '../../core/utils/notifications.dart';
 
@@ -115,42 +116,42 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 ),
                 const SizedBox(height: 12),
                 Consumer<UserHomeViewModel>(
-                  builder:
-                      (context, vm, child) => DropdownButtonFormField<String>(
-                        value: null,
-                        items:
-                            vm.pradeshList.isEmpty
-                                ? [
-                                  const DropdownMenuItem<String>(
-                                    value: null,
-                                    child: Text("Loading Pradesh..."),
-                                  ),
-                                ]
-                                : vm.pradeshList
-                                    .map(
-                                      (p) => DropdownMenuItem<String>(
-                                        value: p['id']?.toString(),
-                                        child: Text(p['name']?.toString() ?? ''),
-                                      ),
-                                    )
-                                    .toList(),
-                        onChanged:
-                            vm.pradeshList.isEmpty
-                                ? null
-                                : (val) {
-                                    final selected = vm.pradeshList.firstWhere(
-                                      (p) => p['id']?.toString() == val,
-                                      orElse: () => <String, dynamic>{},
-                                    );
-                                    pradeshCtrl.text = selected['name']?.toString() ?? '';
-                                  },
-                        decoration: const InputDecoration(
-                          labelText: 'Pradesh',
-                          hintText: 'Select Pradesh',
-                        ),
-                        validator:
-                            (val) => val == null ? 'Select a pradesh' : null,
-                      ),
+                  builder: (context, vm, child) {
+                    return TypeAheadField<Map<String, dynamic>>(
+                      controller: pradeshCtrl,
+                      builder: (context, controller, focusNode) {
+                        return TextFormField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          decoration: const InputDecoration(
+                            labelText: 'Pradesh',
+                            hintText: 'Search Pradesh',
+                          ),
+                          validator: (val) => val == null || val.trim().isEmpty ? 'Select a pradesh' : null,
+                        );
+                      },
+                      itemBuilder: (context, suggestion) {
+                        return ListTile(
+                          title: Text(suggestion['name']?.toString() ?? ''),
+                        );
+                      },
+                      onSelected: (suggestion) {
+                        pradeshCtrl.text = suggestion['name']?.toString() ?? '';
+                      },
+                      suggestionsCallback: (pattern) {
+                        return vm.pradeshList.where((p) {
+                          final name = p['name']?.toString().toLowerCase() ?? '';
+                          return name.contains(pattern.toLowerCase());
+                        }).toList();
+                      },
+                      emptyBuilder: (context) {
+                        return const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text('No pradesh found'),
+                        );
+                      },
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
@@ -299,48 +300,42 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 ),
                 const SizedBox(height: 12),
                 Consumer<UserHomeViewModel>(
-                  builder:
-                      (context, vm, child) {
-                        final selectedPradeshId = vm.pradeshList.firstWhere(
-                          (p) => p['name'] == user['pradesh'],
-                          orElse: () => <String, dynamic>{},
-                        )['id']?.toString();
-                        return DropdownButtonFormField<String>(
-                        value: selectedPradeshId,
-                        items:
-                            vm.pradeshList.isEmpty
-                                ? [
-                                  DropdownMenuItem<String>(
-                                    value: selectedPradeshId,
-                                    child: Text(user['pradesh'] ?? "Loading..."),
-                                  ),
-                                ]
-                                : vm.pradeshList
-                                    .map(
-                                      (p) => DropdownMenuItem<String>(
-                                        value: p['id']?.toString(),
-                                        child: Text(p['name']?.toString() ?? ''),
-                                      ),
-                                    )
-                                    .toList(),
-                        onChanged:
-                            vm.pradeshList.isEmpty
-                                ? null
-                                : (val) {
-                                    final selected = vm.pradeshList.firstWhere(
-                                      (p) => p['id']?.toString() == val,
-                                      orElse: () => <String, dynamic>{},
-                                    );
-                                    pradeshCtrl.text = selected['name']?.toString() ?? '';
-                                  },
-                        decoration: const InputDecoration(
-                          labelText: 'Pradesh',
-                          hintText: 'Select Pradesh',
-                        ),
-                        validator:
-                            (val) => val == null ? 'Select a pradesh' : null,
-                      );
+                  builder: (context, vm, child) {
+                    return TypeAheadField<Map<String, dynamic>>(
+                      controller: pradeshCtrl,
+                      builder: (context, controller, focusNode) {
+                        return TextFormField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          decoration: const InputDecoration(
+                            labelText: 'Pradesh',
+                            hintText: 'Search Pradesh',
+                          ),
+                          validator: (val) => val == null || val.trim().isEmpty ? 'Select a pradesh' : null,
+                        );
                       },
+                      itemBuilder: (context, suggestion) {
+                        return ListTile(
+                          title: Text(suggestion['name']?.toString() ?? ''),
+                        );
+                      },
+                      onSelected: (suggestion) {
+                        pradeshCtrl.text = suggestion['name']?.toString() ?? '';
+                      },
+                      suggestionsCallback: (pattern) {
+                        return vm.pradeshList.where((p) {
+                          final name = p['name']?.toString().toLowerCase() ?? '';
+                          return name.contains(pattern.toLowerCase());
+                        }).toList();
+                      },
+                      emptyBuilder: (context) {
+                        return const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text('No pradesh found'),
+                        );
+                      },
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
@@ -537,10 +532,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      if (user['pradesh_id'] != null && user['pradesh_id'].toString().isNotEmpty) ...[
+                                      if (user['pradesh'] != null && user['pradesh'].toString().isNotEmpty) ...[
                                         const SizedBox(width: 8),
                                         Text(
-                                          user['pradesh_id'].toString(),
+                                          user['pradesh'].toString(),
                                           style: const TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w600,

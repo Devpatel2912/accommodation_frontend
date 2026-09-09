@@ -769,15 +769,12 @@ class _MemberFormState extends State<_MemberForm> {
       return;
     }
     setState(() {
-      final lockedPradesh =
-          context.read<NewRequestViewModel>().shouldLockPradeshToRequester
-          ? context.read<NewRequestViewModel>().userPradesh
-          : '';
+      final userPradesh = context.read<NewRequestViewModel>().userPradesh;
       _filteredSuggestions = widget.suggestions
           .where(
             (s) =>
                 s.name.toLowerCase().contains(query.toLowerCase()) &&
-                (lockedPradesh.isEmpty || s.pradesh == lockedPradesh),
+                (userPradesh.isEmpty || s.pradesh == userPradesh),
           )
           .toList();
     });
