@@ -728,16 +728,28 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                       parentContext: context,
                       isHistory: isHistory,
                       onDelete: () async {
-                        final success = await viewModel.cancelRequest(
-                          request.id,
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AppConfirmDialog(
+                            title: 'Delete Request',
+                            message: 'Are you sure you want to delete this request?',
+                            confirmText: 'Delete',
+                            confirmColor: AppColors.danger,
+                            icon: HugeIcons.strokeRoundedDelete01,
+                            onConfirm: () async {
+                              final success = await viewModel.cancelRequest(
+                                request.id,
+                              );
+                              if (success && context.mounted) {
+                                AppNotifications.showTopSnackBar(
+                                  context,
+                                  'Request deleted',
+                                  isError: true,
+                                );
+                              }
+                            },
+                          ),
                         );
-                        if (success) {
-                          AppNotifications.showTopSnackBar(
-                            context,
-                            'Request deleted',
-                            isError: true,
-                          );
-                        }
                       },
                       onUpdate: (updatedRequest) async {
                         final success = await viewModel.updateRequestStatus(
