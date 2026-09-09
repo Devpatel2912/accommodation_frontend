@@ -9,7 +9,7 @@ class RequestRemoteDataSource {
 
   RequestRemoteDataSource(this.client);
 
-  Future<List<String>> getPradeshList(String token) async {
+  Future<List<Map<String, dynamic>>> getPradeshList(String token) async {
     try {
       final url = Uri.parse('${ApiConfig.baseUrl}/admin/pradesh');
       final response = await client.get(
@@ -23,7 +23,7 @@ class RequestRemoteDataSource {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         print("DEBUG: Pradesh API Raw Data: ${response.body}");
-        return List<String>.from(data['pradesh'] ?? []);
+        return List<Map<String, dynamic>>.from(data['pradesh'] ?? []);
       }
       return [];
     } catch (e) {

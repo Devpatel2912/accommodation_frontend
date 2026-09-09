@@ -55,7 +55,7 @@ class NewRequestView extends StatelessWidget {
                 requestToEdit,
                 pradesh: userPradesh,
                 adminRole: isAdmin,
-                allPradesh: list,
+                allPradesh: list.map((e) => e['name']?.toString() ?? '').where((s) => s.isNotEmpty).toList(),
               );
             });
           }

@@ -63,7 +63,7 @@ class UserHomeViewModel extends ChangeNotifier {
   DateTime? filterEndDate;
   String? lastAllocationError;
   String? lastRoomError;
-  List<String> pradeshList = [];
+  List<Map<String, dynamic>> pradeshList = [];
 
   Future<void> fetchPradeshList() async {
     final token = await Prefs.getToken();

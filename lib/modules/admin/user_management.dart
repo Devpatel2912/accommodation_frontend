@@ -121,20 +121,29 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         items:
                             vm.pradeshList.isEmpty
                                 ? [
-                                  const DropdownMenuItem(
+                                  const DropdownMenuItem<String>(
                                     value: null,
                                     child: Text("Loading Pradesh..."),
                                   ),
                                 ]
                                 : vm.pradeshList
                                     .map(
-                                      (p) => DropdownMenuItem(value: p, child: Text(p)),
+                                      (p) => DropdownMenuItem<String>(
+                                        value: p['id']?.toString(),
+                                        child: Text(p['name']?.toString() ?? ''),
+                                      ),
                                     )
                                     .toList(),
                         onChanged:
                             vm.pradeshList.isEmpty
                                 ? null
-                                : (val) => pradeshCtrl.text = val ?? '',
+                                : (val) {
+                                    final selected = vm.pradeshList.firstWhere(
+                                      (p) => p['id']?.toString() == val,
+                                      orElse: () => <String, dynamic>{},
+                                    );
+                                    pradeshCtrl.text = selected['name']?.toString() ?? '';
+                                  },
                         decoration: const InputDecoration(
                           labelText: 'Pradesh',
                           hintText: 'Select Pradesh',
@@ -198,6 +207,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               isLoading: vm.isUpdating,
               onPressed: () async {
                 if (!formKey.currentState!.validate()) return;
+                
+                // Find pradesh_id based on name in pradeshCtrl
+                final selectedPradesh = vm.pradeshList.firstWhere(
+                  (p) => p['name'] == pradeshCtrl.text.trim(),
+                  orElse: () => <String, dynamic>{},
+                );
 
                 final userData = {
                   'name': nameCtrl.text.trim(),
@@ -205,6 +220,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   'phone': phoneCtrl.text.trim(),
                   'role': selectedRole,
                   'pradesh': pradeshCtrl.text.trim(),
+                  if (selectedPradesh.containsKey('id'))
+                    'pradesh_id': selectedPradesh['id'],
                   if (selectedRole == 'SUBADMIN' && selectedSubAdminType != null)
                     'sub_admin_type': selectedSubAdminType,
                 };
@@ -283,35 +300,47 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 const SizedBox(height: 12),
                 Consumer<UserHomeViewModel>(
                   builder:
-                      (context, vm, child) => DropdownButtonFormField<String>(
-                        value:
-                            vm.pradeshList.contains(user['pradesh'])
-                                ? user['pradesh']
-                                : null,
+                      (context, vm, child) {
+                        final selectedPradeshId = vm.pradeshList.firstWhere(
+                          (p) => p['name'] == user['pradesh'],
+                          orElse: () => <String, dynamic>{},
+                        )['id']?.toString();
+                        return DropdownButtonFormField<String>(
+                        value: selectedPradeshId,
                         items:
                             vm.pradeshList.isEmpty
                                 ? [
-                                  DropdownMenuItem(
-                                    value: user['pradesh'],
+                                  DropdownMenuItem<String>(
+                                    value: selectedPradeshId,
                                     child: Text(user['pradesh'] ?? "Loading..."),
                                   ),
                                 ]
                                 : vm.pradeshList
                                     .map(
-                                      (p) => DropdownMenuItem(value: p, child: Text(p)),
+                                      (p) => DropdownMenuItem<String>(
+                                        value: p['id']?.toString(),
+                                        child: Text(p['name']?.toString() ?? ''),
+                                      ),
                                     )
                                     .toList(),
                         onChanged:
                             vm.pradeshList.isEmpty
                                 ? null
-                                : (val) => pradeshCtrl.text = val ?? '',
+                                : (val) {
+                                    final selected = vm.pradeshList.firstWhere(
+                                      (p) => p['id']?.toString() == val,
+                                      orElse: () => <String, dynamic>{},
+                                    );
+                                    pradeshCtrl.text = selected['name']?.toString() ?? '';
+                                  },
                         decoration: const InputDecoration(
                           labelText: 'Pradesh',
                           hintText: 'Select Pradesh',
                         ),
                         validator:
                             (val) => val == null ? 'Select a pradesh' : null,
-                      ),
+                      );
+                      },
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
@@ -369,6 +398,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               isLoading: vm.isUpdating,
               onPressed: () async {
                 if (!formKey.currentState!.validate()) return;
+                
+                final selectedPradesh = vm.pradeshList.firstWhere(
+                  (p) => p['name'] == pradeshCtrl.text.trim(),
+                  orElse: () => <String, dynamic>{},
+                );
 
                 final updatedData = {
                   'name': nameCtrl.text.trim(),
@@ -376,6 +410,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   'phone': phoneCtrl.text.trim(),
                   'role': selectedRole,
                   'pradesh': pradeshCtrl.text.trim(),
+                  if (selectedPradesh.containsKey('id'))
+                    'pradesh_id': selectedPradesh['id'],
                   if (selectedRole.toUpperCase() == 'SUBADMIN' &&
                       selectedSubAdminType != null)
                     'sub_admin_type': selectedSubAdminType,
@@ -501,10 +537,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      if (user['pradesh'] != null && user['pradesh'].toString().isNotEmpty) ...[
+                                      if (user['pradesh_id'] != null && user['pradesh_id'].toString().isNotEmpty) ...[
                                         const SizedBox(width: 8),
                                         Text(
-                                          user['pradesh'].toString(),
+                                          user['pradesh_id'].toString(),
                                           style: const TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w600,
