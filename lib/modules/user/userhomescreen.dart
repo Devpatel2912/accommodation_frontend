@@ -4,6 +4,7 @@ import 'package:accommodation/presentation/views/login_view.dart';
 import 'package:accommodation/presentation/views/new_request_view.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:accommodation/core/utils/color.dart';
 import 'package:accommodation/core/utils/notifications.dart';
@@ -248,7 +249,7 @@ class _UserHomeScreenContentState extends State<_UserHomeScreenContent> {
               ),
             ),
           ),
-          if (viewModel.requests.isEmpty)
+          if (viewModel.groupedRequests.isEmpty)
             SliverFillRemaining(
               child: Center(
                 child: Column(
@@ -279,15 +280,15 @@ class _UserHomeScreenContentState extends State<_UserHomeScreenContent> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
-                  final request = viewModel.requests[index];
+                  final batch = viewModel.groupedRequests[index];
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: _RequestSummaryCard(
-                      request: request,
+                    child: _GroupedDateSummaryCard(
+                      batch: batch,
                       onCancel: () => viewModel.fetchRequests(),
                     ),
                   );
-                }, childCount: viewModel.requests.length),
+                }, childCount: viewModel.groupedRequests.length),
               ),
             ),
         ],
@@ -534,36 +535,39 @@ class RequestDetailsScreen extends StatelessWidget {
                         color: AppColors.teal,
                       ),
                       onPressed: () async {
-                        final memberIds = request.members
-                            .where((m) => m.id != null)
-                            .map((m) => m.id!)
-                            .toList();
-                        if (memberIds.isEmpty) {
-                          AppNotifications.showTopSnackBar(
-                            context,
-                            'No members found to share with.',
-                            isError: true,
-                          );
-                          return;
-                        }
-                        final success = await viewModel.forwardToMembers(
-                          request.id,
-                          memberIds,
-                        );
-                        if (context.mounted) {
-                          if (success) {
-                            AppNotifications.showTopSnackBar(
-                              context,
-                              'Booking details shared with all members!',
-                            );
-                          } else {
-                            AppNotifications.showTopSnackBar(
-                              context,
-                              'Failed to share details.',
-                              isError: true,
-                            );
+                        final sb = StringBuffer();
+                        sb.writeln('Accommodation Request Details');
+                        sb.writeln('Status: ${request.status}');
+                        sb.writeln('Check-in: ${_formatDate(request.checkIn)}');
+                        sb.writeln('Check-out: ${_formatDate(request.checkOut)}');
+                        
+                        if (request.hasAnyAllocation) {
+                          sb.writeln('');
+                          sb.writeln('Allocation Status: ${request.allocationStatusLabel}');
+                          if (request.hasRoomAllocation) {
+                            sb.writeln('Room Number: ${request.activeRoomAllocation?.roomNumber ?? ""}');
+                          }
+                          if (request.hasHouseAllocation) {
+                            sb.writeln('House: ${request.activeHouseDetails?.ownerName ?? ""}');
                           }
                         }
+                        
+                        sb.writeln('');
+                        sb.writeln('Members:');
+                        for (final member in request.members) {
+                          final allocation = request.findAllocationForMember(member.id);
+                          String label = '';
+                          if (allocation?.roomNumber != null) {
+                            label = ' - Room ${allocation!.roomNumber}';
+                          } else if (allocation?.houseName != null) {
+                            label = ' - ${allocation!.houseName}';
+                          } else if (request.hasDirectHouseBooking && request.houseName != null) {
+                            label = ' - ${request.houseName}';
+                          }
+                          sb.writeln('• ${member.name}$label');
+                        }
+                        
+                        await Share.share(sb.toString());
                       },
                     ),
             ),
@@ -577,10 +581,6 @@ class RequestDetailsScreen extends StatelessWidget {
           children: [
             _buildStatusCard(),
             const SizedBox(height: 20),
-            if (_isProcessedStatus && request.isFullyAllocated) ...[
-              _buildForwardButton(context),
-              const SizedBox(height: 20),
-            ],
             _buildInfoSection(context),
             if (request.hasAnyAllocation) ...[
               const SizedBox(height: 20),
@@ -593,8 +593,13 @@ class RequestDetailsScreen extends StatelessWidget {
               const SizedBox(height: 20),
               _buildNotesSection(),
             ],
-            const SizedBox(height: 32),
-            _buildCancelButton(context),
+            if ((request.status.trim().toUpperCase() == 'PENDING' &&
+                 !request.notes.contains('[SENT_TO_ADMIN]')) ||
+                request.status.trim().toUpperCase() == 'CANCELLED' ||
+                request.status.trim().toUpperCase() == 'REJECTED') ...[
+              const SizedBox(height: 12),
+              _buildSendToAdminButton(context),
+            ],
             const SizedBox(height: 20),
           ],
         ),
@@ -602,49 +607,19 @@ class RequestDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildForwardButton(BuildContext context) {
+  Widget _buildSendToAdminButton(BuildContext context) {
     return Consumer<UserHomeViewModel>(
       builder: (context, viewModel, child) {
         return SizedBox(
           width: double.infinity,
           child: AppButton(
-            text: viewModel.isForwarding
-                ? 'Forwarding...'
-                : 'Forward to Members',
+            text: viewModel.isUpdating ? 'Sending...' : 'Send to Admin',
             icon: Icons.send_rounded,
-            isLoading: viewModel.isForwarding,
+            isLoading: viewModel.isUpdating,
             onPressed: () async {
-              final memberIds = request.members
-                  .where((m) => m.id != null)
-                  .map((m) => m.id!)
-                  .toList();
-
-              if (memberIds.isEmpty) {
-                AppNotifications.showTopSnackBar(
-                  context,
-                  'No members found with valid IDs to forward to.',
-                  isError: true,
-                );
-                return;
-              }
-
-              final success = await viewModel.forwardToMembers(
-                request.id,
-                memberIds,
-              );
-              if (context.mounted) {
-                if (success) {
-                  AppNotifications.showTopSnackBar(
-                    context,
-                    'Booking details forwarded to members via email!',
-                  );
-                } else {
-                  AppNotifications.showTopSnackBar(
-                    context,
-                    'Failed to forward details. Please try again.',
-                    isError: true,
-                  );
-                }
+              final success = await viewModel.sendToAdmin(request.id);
+              if (success && context.mounted) {
+                Navigator.pop(context, true);
               }
             },
           ),
@@ -1411,6 +1386,157 @@ class _RequestDateBlock extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _GroupedDateSummaryCard extends StatelessWidget {
+  final GroupedDateBatch batch;
+  final VoidCallback onCancel;
+
+  const _GroupedDateSummaryCard({required this.batch, required this.onCancel});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () async {
+        final cancelled = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                GroupedDateDetailsScreen(batch: batch, onCancel: onCancel),
+          ),
+        );
+
+        if (cancelled == true) {
+          onCancel();
+        }
+      },
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 18,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.tealLight,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(
+                Icons.calendar_month_outlined,
+                color: AppColors.teal,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${_formatLongDate(batch.checkIn)} - ${_formatLongDate(batch.checkOut)}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${batch.totalMembers} Members • ${batch.requests.length} Requests',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.labelGrey,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.labelGrey),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static String _formatLongDate(DateTime date) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
+  }
+}
+
+class GroupedDateDetailsScreen extends StatelessWidget {
+  final GroupedDateBatch batch;
+  final VoidCallback onCancel;
+
+  const GroupedDateDetailsScreen({
+    super.key,
+    required this.batch,
+    required this.onCancel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.bgGrey,
+      appBar: AppBar(
+        backgroundColor: AppColors.bgGrey,
+        elevation: 0,
+        title: Text(
+          '${_GroupedDateSummaryCard._formatLongDate(batch.checkIn)} - ${_GroupedDateSummaryCard._formatLongDate(batch.checkOut)}',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textDark,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.textDark,
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(20),
+        itemCount: batch.requests.length,
+        itemBuilder: (context, index) {
+          final request = batch.requests[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _RequestSummaryCard(request: request, onCancel: onCancel),
+          );
+        },
+      ),
     );
   }
 }

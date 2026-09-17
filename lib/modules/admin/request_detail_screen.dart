@@ -118,6 +118,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     final finalNotes = AccommodationRequest.composeNotes(
       userNotes: request.userNotes,
       adminNotes: adminNotes,
+      preserveSentToAdmin: request.notes.contains('[SENT_TO_ADMIN]'),
     );
 
     setState(() => _isBusy = true);

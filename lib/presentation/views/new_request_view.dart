@@ -313,9 +313,50 @@ class _NewRequestScreenContentState extends State<_NewRequestScreenContent>
                       children: [
                         const _Label('REQUEST NAME / PURPOSE'),
                         const SizedBox(height: 7),
-                        _Field(
-                          controller: viewModel.requestNameCtrl,
-                          hint: 'e.g. Official Visit, Guest, etc.',
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.circular(9),
+                            border: Border.all(color: AppColors.border, width: 1.4),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButtonFormField<String>(
+                              value: viewModel.requestNameCtrl.text.isEmpty
+                                  ? null
+                                  : viewModel.requestNameCtrl.text,
+                              hint: const Text(
+                                'Select Purpose',
+                                style: TextStyle(fontSize: 13.5, color: AppColors.hintGrey),
+                              ),
+                              isExpanded: true,
+                              decoration: const InputDecoration(border: InputBorder.none),
+                              items: [
+                                'Seva',
+                                'Darshan',
+                                if (viewModel.requestNameCtrl.text.isNotEmpty &&
+                                    !['Seva', 'Darshan']
+                                        .contains(viewModel.requestNameCtrl.text))
+                                  viewModel.requestNameCtrl.text
+                              ]
+                                  .map((purpose) => DropdownMenuItem(
+                                        value: purpose,
+                                        child: Text(
+                                          purpose,
+                                          style: const TextStyle(
+                                            fontSize: 14.5,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  viewModel.requestNameCtrl.text = val;
+                                }
+                              },
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -400,11 +441,6 @@ class _NewRequestScreenContentState extends State<_NewRequestScreenContent>
                                         ),
                                         _buildFormatItem(
                                           '3',
-                                          'Email Address',
-                                          Icons.email,
-                                        ),
-                                        _buildFormatItem(
-                                          '4',
                                           'Pradesh (Optional)',
                                           Icons.location_on,
                                         ),
@@ -478,14 +514,6 @@ class _NewRequestScreenContentState extends State<_NewRequestScreenContent>
                                       ),
                                     ),
                                   ],
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: viewModel.addMember,
-                                child: const Icon(
-                                  Icons.add_circle_outline_rounded,
-                                  size: 20,
-                                  color: AppColors.teal,
                                 ),
                               ),
                             ],
@@ -899,56 +927,40 @@ class _MemberFormState extends State<_MemberForm> {
             ),
           ),
         const SizedBox(height: 12),
+        const _Label('CONTACT NUMBER'),
+        const SizedBox(height: 6),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _Label('CONTACT NUMBER'),
-                  const SizedBox(height: 6),
-                  _Field(
-                    controller: _contactCtrl,
-                    hint: '+91 1234567890',
-                    keyboardType: TextInputType.phone,
-                    maxLength: 10,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    onChanged: (value) {
-                      if (widget.onCheckDuplicate(value, 'contact')) {
-                        _contactCtrl.clear();
-                        widget.member.contact = '';
-                        return;
-                      }
-                      widget.member.contact = value;
-                    },
-                  ),
-                ],
+              child: _Field(
+                controller: _contactCtrl,
+                hint: '+91 1234567890',
+                keyboardType: TextInputType.phone,
+                maxLength: 10,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                onChanged: (value) {
+                  if (widget.onCheckDuplicate(value, 'contact')) {
+                    _contactCtrl.clear();
+                    widget.member.contact = '';
+                    return;
+                  }
+                  widget.member.contact = value;
+                },
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _Label('EMAIL ADDRESS'),
-                  const SizedBox(height: 6),
-                  _Field(
-                    controller: _emailCtrl,
-                    hint: 'john@company.com',
-                    keyboardType: TextInputType.emailAddress,
-                    onChanged: (value) {
-                      if (widget.onCheckDuplicate(value, 'email')) {
-                        _emailCtrl.clear();
-                        widget.member.email = '';
-                        return;
-                      }
-                      widget.member.email = value;
-                    },
-                  ),
-                ],
+            if (widget.index == vm.members.length - 1) ...[
+              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: IconButton(
+                  icon: const Icon(Icons.add, size: 28, color: AppColors.teal),
+                  onPressed: vm.addMember,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
               ),
-            ),
+            ],
           ],
         ),
         const SizedBox(height: 12),

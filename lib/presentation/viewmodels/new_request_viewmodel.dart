@@ -247,13 +247,10 @@ class NewRequestViewModel extends ChangeNotifier {
             String contact = row.length > 1
                 ? row[1]?.value?.toString() ?? ""
                 : "";
-            String email = row.length > 2
-                ? row[2]?.value?.toString() ?? ""
-                : "";
             String pradesh = shouldLockPradeshToRequester
                 ? userPradesh
-                : row.length > 3
-                ? row[3]?.value?.toString() ?? userPradesh
+                : row.length > 2
+                ? row[2]?.value?.toString() ?? userPradesh
                 : userPradesh;
 
             if (name.trim().isNotEmpty) {
@@ -262,7 +259,7 @@ class NewRequestViewModel extends ChangeNotifier {
                 AddedMember(
                   name: name.trim(),
                   contact: contact.trim(),
-                  email: email.trim(),
+                  email: "",
                   pradesh: pradesh.trim().isEmpty
                       ? userPradesh
                       : pradesh.trim(),
@@ -278,7 +275,6 @@ class NewRequestViewModel extends ChangeNotifier {
             (m) =>
                 m.name.isEmpty &&
                 m.contact.isEmpty &&
-                m.email.isEmpty &&
                 m.id == null,
           );
 
@@ -357,7 +353,7 @@ class NewRequestViewModel extends ChangeNotifier {
       "check_in": request.checkIn.toIso8601String().split('T').first,
       "check_out": request.checkOut.toIso8601String().split('T').first,
       "total_people": request.members.length,
-      "notes": request.notes,
+      "notes": request.notes.isNotEmpty ? "${request.notes}\n[SENT_TO_ADMIN]" : "[SENT_TO_ADMIN]",
       "members": request.members
           .map(
             (m) => {

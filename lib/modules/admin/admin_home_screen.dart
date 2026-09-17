@@ -732,7 +732,8 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                           context: context,
                           builder: (ctx) => AppConfirmDialog(
                             title: 'Delete Request',
-                            message: 'Are you sure you want to delete this request?',
+                            message:
+                                'Are you sure you want to delete this request?',
                             confirmText: 'Delete',
                             confirmColor: AppColors.danger,
                             icon: HugeIcons.strokeRoundedDelete01,
@@ -1384,7 +1385,9 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
               children: [
                 Expanded(
                   child: Text(
-                    request.title,
+                    request.requesterPradesh.isNotEmpty
+                        ? request.requesterPradesh
+                        : 'Unknown Pradesh',
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
@@ -1415,16 +1418,7 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
                 ),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              request.subtitle,
-              style: const TextStyle(
-                color: AppColors.labelGrey,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
+
             Row(
               children: [
                 HugeIcon(
@@ -1447,87 +1441,7 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
                 _buildStatusBadge(),
               ],
             ),
-            if (request.status.contains('(') || request.hasAnyAllocation) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  HugeIcon(
-                    icon: request.hasRoomAllocation
-                        ? HugeIcons.strokeRoundedDoor01
-                        : (request.hasHouseAllocation
-                              ? HugeIcons.strokeRoundedHome01
-                              : HugeIcons.strokeRoundedLocation01),
-                    size: 14,
-                    color: AppColors.teal,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      request.hasRoomAllocation
-                          ? 'Room: ${request.activeRoomAllocation?.roomNumber ?? ''}'
-                          : (request.hasHouseAllocation
-                                ? 'House: ${request.activeHouseDetails?.ownerName ?? ''}'
-                                : 'Location: ${_extractLocation(request.status)}'),
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.teal,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            if (request.notes.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.notes_rounded,
-                    size: 15,
-                    color: AppColors.labelGrey,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Notes: ${request.notes}',
-                          maxLines: _isExpanded ? null : 2,
-                          overflow: _isExpanded
-                              ? TextOverflow.visible
-                              : TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.labelGrey,
-                          ),
-                        ),
-                        if (request.notes.length > 50)
-                          GestureDetector(
-                            onTap: () =>
-                                setState(() => _isExpanded = !_isExpanded),
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Text(
-                                _isExpanded ? 'less' : 'more',
-                                style: const TextStyle(
-                                  color: AppColors.teal,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+
             if (!widget.isHistory) ...[
               const SizedBox(height: 12),
               const Divider(height: 1, color: AppColors.border),
@@ -2073,6 +1987,7 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
     final finalNotes = AccommodationRequest.composeNotes(
       userNotes: widget.request.userNotes,
       adminNotes: adminNotes,
+      preserveSentToAdmin: widget.request.notes.contains('[SENT_TO_ADMIN]'),
     );
 
     return await widget.onUpdate(

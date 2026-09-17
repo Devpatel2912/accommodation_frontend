@@ -98,7 +98,6 @@ class RequestRemoteDataSource {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> body = json.decode(response.body);
-        print("DEBUG: Admin Requests Body: ${response.body}");
         final List data = body['requests'] ?? [];
         return data.map((json) => AccommodationRequest.fromJson(json)).toList();
       }
@@ -108,6 +107,26 @@ class RequestRemoteDataSource {
       return [];
     }
   }
+
+  Future<bool> sendToAdmin(int requestId, String token) async {
+    try {
+      final url = Uri.parse('${ApiConfig.baseUrl}/requests/$requestId/send-to-admin');
+      final response = await client.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      print("SEND TO ADMIN RESPONSE: ${response.statusCode} ${response.body}");
+      return response.statusCode == 200;
+    } catch (e) {
+      print("SEND TO ADMIN ERROR: $e");
+      return false;
+    }
+  }
+
+
 
   Future<bool> cancelRequest(int requestId, String token) async {
     try {

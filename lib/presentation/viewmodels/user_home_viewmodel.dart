@@ -18,6 +18,20 @@ import 'package:accommodation/domain/usecases/allocate_member_usecase.dart';
 import 'package:accommodation/domain/usecases/get_available_rooms_usecase.dart';
 import 'package:accommodation/core/utils/notifications.dart';
 
+class GroupedDateBatch {
+  final DateTime checkIn;
+  final DateTime checkOut;
+  final List<AccommodationRequest> requests;
+
+  GroupedDateBatch({
+    required this.checkIn,
+    required this.checkOut,
+    required this.requests,
+  });
+
+  int get totalMembers => requests.fold(0, (sum, req) => sum + req.members.length);
+}
+
 class UserHomeViewModel extends ChangeNotifier {
   final _uiNotificationController =
       StreamController<AppNotification>.broadcast();
@@ -81,6 +95,43 @@ class UserHomeViewModel extends ChangeNotifier {
       }
     }
     return set.toList()..sort();
+  }
+
+  List<GroupedDateBatch> get groupedRequests {
+    final Map<String, List<AccommodationRequest>> dateMap = {};
+    
+    for (var req in requests) {
+      final inKey = '${req.checkIn.year}-${req.checkIn.month}-${req.checkIn.day}';
+      final outKey = '${req.checkOut.year}-${req.checkOut.month}-${req.checkOut.day}';
+      final compositeKey = '${inKey}_$outKey';
+      
+      if (!dateMap.containsKey(compositeKey)) {
+        dateMap[compositeKey] = [];
+      }
+      dateMap[compositeKey]!.add(req);
+    }
+
+    final List<GroupedDateBatch> batches = [];
+    for (var dateEntry in dateMap.entries) {
+      final reqs = dateEntry.value;
+      if (reqs.isNotEmpty) {
+        // Just take the dates from the first request since they all match
+        batches.add(GroupedDateBatch(
+          checkIn: reqs.first.checkIn,
+          checkOut: reqs.first.checkOut,
+          requests: reqs,
+        ));
+      }
+    }
+    
+    // Sort batches by newest request (highest ID) first
+    batches.sort((a, b) {
+      final aMaxId = a.requests.isNotEmpty ? (a.requests.first.id ?? 0) : 0;
+      final bMaxId = b.requests.isNotEmpty ? (b.requests.first.id ?? 0) : 0;
+      return bMaxId.compareTo(aMaxId);
+    });
+
+    return batches;
   }
 
   void setFilterPradesh(String? value) {
@@ -245,6 +296,29 @@ class UserHomeViewModel extends ChangeNotifier {
         });
       }
     }
+  }
+
+  Future<bool> sendToAdmin(int? requestId) async {
+    if (requestId == null) return false;
+    final token = await Prefs.getToken();
+    if (token == null) return false;
+
+    isUpdating = true;
+    notifyListeners();
+
+    final success = await remoteDataSource.sendToAdmin(requestId, token);
+
+    isUpdating = false;
+    notifyListeners();
+
+    if (success) {
+      notify("Request successfully sent to admin.");
+      await fetchRequests(); // Refresh the list
+    } else {
+      notify("Failed to send request to admin.", isError: true);
+    }
+
+    return success;
   }
 
   Future<bool> cancelRequest(int? requestId) async {

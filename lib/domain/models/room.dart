@@ -6,6 +6,7 @@ class Room {
   final int remainingCapacity;
   final String status;
   final bool isActive;
+  final List<Map<String, dynamic>> members;
 
   Room({
     required this.id,
@@ -15,6 +16,7 @@ class Room {
     required this.remainingCapacity,
     this.status = 'Available',
     this.isActive = true,
+    this.members = const [],
   });
 
   factory Room.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class Room {
           totalCapacity,
       status: json['status'] ?? 'Available',
       isActive: json['is_active'] ?? true,
+      members: (json['members'] as List?)?.map((m) => Map<String, dynamic>.from(m)).toList() ?? [],
     );
   }
 }

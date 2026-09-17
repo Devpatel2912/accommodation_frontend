@@ -386,15 +386,18 @@ class AccommodationRequest {
   bool get isWaitingForAllocation => !hasAnyAllocation;
   String? get houseName => activeHouseDetails?.ownerName;
   String get userNotes {
-    if (!notes.contains(adminNotesSeparator)) {
-      final trimmedNotes = notes.trim();
-      if (trimmedNotes.startsWith('Approved:') ||
-          trimmedNotes.startsWith('Rejected:')) {
-        return '';
-      }
-      return notes;
+    String cleanNotes = notes;
+    if (cleanNotes.contains(adminNotesSeparator)) {
+      cleanNotes = cleanNotes.split(adminNotesSeparator).first;
     }
-    return notes.split(adminNotesSeparator).first.trim();
+    
+    cleanNotes = cleanNotes.replaceAll('[SENT_TO_ADMIN]', '').trim();
+    
+    if (cleanNotes.startsWith('Approved:') ||
+        cleanNotes.startsWith('Rejected:')) {
+      return '';
+    }
+    return cleanNotes;
   }
 
   String get adminNotes {
@@ -413,12 +416,24 @@ class AccommodationRequest {
         .trim();
   }
 
-  static String composeNotes({String? userNotes, String? adminNotes}) {
+  static String composeNotes({String? userNotes, String? adminNotes, bool preserveSentToAdmin = false}) {
     final user = userNotes?.trim() ?? '';
     final admin = adminNotes?.trim() ?? '';
-    if (user.isEmpty) return admin;
-    if (admin.isEmpty) return user;
-    return '$user$adminNotesSeparator$admin';
+    
+    String result = '';
+    if (user.isEmpty) {
+      result = admin;
+    } else if (admin.isEmpty) {
+      result = user;
+    } else {
+      result = '$user$adminNotesSeparator$admin';
+    }
+    
+    if (preserveSentToAdmin && !result.contains('[SENT_TO_ADMIN]')) {
+      result = result.isEmpty ? '[SENT_TO_ADMIN]' : '$result\n[SENT_TO_ADMIN]';
+    }
+    
+    return result;
   }
 
   String get allocationStatusLabel {

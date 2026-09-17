@@ -195,7 +195,7 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
           final viewModel = context.read<UserHomeViewModel>();
           final success = await viewModel.deleteRoom(room.id);
           if (success && mounted) {
-              AppNotifications.showTopSnackBar(
+            AppNotifications.showTopSnackBar(
               context,
               'Room deleted successfully',
             );
@@ -314,12 +314,16 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
                                           'id': room.id,
                                           'no': room.roomNumber,
                                           'capacity': room.capacity.toString(),
-                                          'remaining_capacity':
-                                              room.remainingCapacity.toString(),
+                                          'remaining_capacity': room
+                                              .remainingCapacity
+                                              .toString(),
                                         };
 
                                         if (widget.onSelect != null) {
-                                          await widget.onSelect!(roomData, context);
+                                          await widget.onSelect!(
+                                            roomData,
+                                            context,
+                                          );
                                         } else {
                                           Navigator.pop(context, roomData);
                                         }
@@ -528,157 +532,281 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
     );
   }
 
-  Widget _buildRoomListCard(dynamic room, Color statusColor) {
+  void _showRoomMembersDialog(Room room) {
+    AppDialog.show(
+      context: context,
+      title: 'Room ${room.roomNumber} - Allocated Members',
+      icon: Icons.people_alt_rounded,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (room.members.isEmpty)
+            const Text(
+              'No members are currently allocated to this room.',
+              style: TextStyle(color: AppColors.labelGrey),
+            )
+          else
+            ...room.members.map((m) {
+              final name = m['name'] ?? 'Unknown';
+              final contact = m['contact'] ?? 'No contact';
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.person, size: 16, color: AppColors.teal),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '$name ($contact)',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRoomListCard(Room room, Color statusColor) {
     final String roomNo = room.roomNumber;
     final int rem = room.remainingCapacity;
     final int tot = room.capacity;
     final int occupied = room.currentOccupancy;
-    final bool isFull = rem == 0;
+    final bool isFull = rem <= 0;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: (isFull ? AppColors.danger : AppColors.teal).withOpacity(
-                0.1,
+    Color getCapacityColor() {
+      if (rem == tot) return const Color(0xFF4CAF50);
+      if (rem > 0) return const Color(0xFFFF9800);
+      return const Color(0xFFE53935);
+    }
+
+    String getStatusText() {
+      if (rem == tot) return 'Available';
+      if (rem > 0) return 'Partially Filled';
+      return 'Full';
+    }
+
+    final capacityColor = getCapacityColor();
+    final double occupancyPercentage = tot > 0 ? (occupied / tot) : 0.0;
+
+    return InkWell(
+      onTap: () {
+        if (room.members.isNotEmpty) {
+          _showRoomMembersDialog(room);
+        } else if (!widget.isSelectionMode) {
+          AppNotifications.showTopSnackBar(
+            context,
+            'No members allocated to this room',
+          );
+        }
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Bed icon in circle
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: capacityColor.withOpacity(0.1),
+                shape: BoxShape.circle,
               ),
-              borderRadius: BorderRadius.circular(12),
+              child: Icon(
+                Icons.bed_rounded,
+                color: capacityColor,
+                size: 22,
+              ),
             ),
-            child: Icon(
-              Icons.door_front_door_rounded,
-              color: isFull ? AppColors.danger : AppColors.teal,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Room $roomNo',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.people_outline_rounded,
-                      size: 14,
-                      color: AppColors.labelGrey,
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        'Capacity: $tot/$rem available${occupied > 0 ? ' | Occupied: $occupied' : ''}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.labelGrey,
-                          fontWeight: FontWeight.w500,
+            const SizedBox(width: 12),
+            // Right content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Row 1: Room title + Status pill + 3 dots
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Room $roomNo',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textDark,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: (isFull ? AppColors.danger : AppColors.teal)
-                      .withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  isFull ? 'FULL' : 'AVAILABLE',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: isFull ? AppColors.danger : AppColors.teal,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: capacityColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          getStatusText(),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: capacityColor,
+                          ),
+                        ),
+                      ),
+                      if (!widget.isSelectionMode)
+                        SizedBox(
+                          width: 28,
+                          height: 28,
+                          child: PopupMenuButton(
+                            icon: const Icon(
+                              Icons.more_vert_rounded,
+                              color: AppColors.labelGrey,
+                              size: 18,
+                            ),
+                            padding: EdgeInsets.zero,
+                            itemBuilder: (ctx) => [
+                              const PopupMenuItem(
+                                value: 'edit',
+                                child: Text('Edit'),
+                              ),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Text(
+                                  'Delete',
+                                  style: TextStyle(color: AppColors.danger),
+                                ),
+                              ),
+                            ],
+                            onSelected: (val) {
+                              if (val == 'edit') {
+                                _showEditRoomDialog(room);
+                              } else if (val == 'delete') {
+                                _confirmDeleteRoom(room);
+                              }
+                            },
+                          ),
+                        )
+                      else if (widget.isSelectionMode && !isFull)
+                        const Padding(
+                          padding: EdgeInsets.only(left: 6),
+                          child: Text(
+                            'SELECT',
+                            style: TextStyle(
+                              color: AppColors.teal,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  // Row 2: Progress bar + percentage
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: occupancyPercentage,
+                            backgroundColor: AppColors.border.withOpacity(0.4),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(capacityColor),
+                            minHeight: 8,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        '${(occupancyPercentage * 100).toInt()}%',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: capacityColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  // Row 3: Occupied text
+                  Text(
+                    '$occupied / $tot Occupied',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.labelGrey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-              if (!widget.isSelectionMode)
-                PopupMenuButton(
-                  icon: const Icon(
-                    Icons.more_horiz_rounded,
-                    color: AppColors.labelGrey,
-                  ),
-                  itemBuilder: (ctx) => [
-                    const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: Text(
-                        'Delete',
-                        style: TextStyle(color: AppColors.danger),
-                      ),
-                    ),
-                  ],
-                  onSelected: (val) {
-                    if (val == 'edit') {
-                      _showEditRoomDialog(room);
-                    } else if (val == 'delete') {
-                      _confirmDeleteRoom(room);
-                    }
-                  },
-                ),
-              if (widget.isSelectionMode && !isFull)
-                const Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text(
-                    'SELECT',
-                    style: TextStyle(
-                      color: AppColors.teal,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildRoomCard(dynamic room, Color statusColor) {
+  Widget _buildRoomCard(Room room, Color statusColor) {
     final String roomNo = room.roomNumber;
     final int rem = room.remainingCapacity;
     final int tot = room.capacity;
     final int occupied = room.currentOccupancy;
     final bool isFull = rem == 0;
 
-    return Container(
-      padding: const EdgeInsets.all(12),
+    Color getCapacityColor() {
+      if (rem == tot) return AppColors.teal; // 100% available
+      if (rem > 0) return Colors.orange; // Partially available
+      return AppColors.danger; // 0% available
+    }
+
+    return InkWell(
+      onTap: () {
+        if (room.members.isNotEmpty) {
+          _showRoomMembersDialog(room);
+        } else if (!widget.isSelectionMode) {
+          AppNotifications.showTopSnackBar(
+            context,
+            'No members allocated to this room',
+          );
+        }
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border(left: BorderSide(color: getCapacityColor(), width: 6)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -814,6 +942,7 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
             const Spacer(),
         ],
       ),
+      )
     );
   }
 
