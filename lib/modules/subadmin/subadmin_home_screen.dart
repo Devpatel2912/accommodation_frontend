@@ -18,6 +18,7 @@ import 'package:accommodation/presentation/widgets/app_card.dart';
 import 'package:accommodation/presentation/widgets/app_dialog.dart';
 import 'package:accommodation/presentation/widgets/app_loading.dart';
 import 'package:accommodation/modules/admin/request_allocation_screen.dart';
+import 'package:accommodation/presentation/widgets/custom_bottom_bar.dart';
 
 class SubAdminHomeScreen extends StatelessWidget {
   const SubAdminHomeScreen({super.key});
@@ -70,67 +71,27 @@ class _SubAdminHomeScreenContentState
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<UserHomeViewModel>();
+    final isAvd = viewModel.subAdminType?.toUpperCase() == 'AVD';
 
     return Stack(
       children: [
         Scaffold(
           backgroundColor: AppColors.bgGrey,
-          bottomNavigationBar: BottomNavigationBar(
+          bottomNavigationBar: CustomBottomBar(
             currentIndex: _currentIndex,
             onTap: (index) => setState(() => _currentIndex = index),
-            selectedItemColor: AppColors.navy,
-            unselectedItemColor: AppColors.labelGrey,
-            showUnselectedLabels: true,
-            type: BottomNavigationBarType.fixed,
-            selectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 12,
-            ),
             items: [
-              BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _currentIndex == 0
-                        ? AppColors.navy.withOpacity(0.1)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: HugeIcon(
-                    icon: HugeIcons.strokeRoundedTaskDaily01,
-                    color: _currentIndex == 0
-                        ? AppColors.navy
-                        : AppColors.labelGrey,
-                  ),
-                ),
+              const BottomBarItem(
+                icon: HugeIcons.strokeRoundedTaskDaily01,
                 label: 'Requests',
               ),
-              BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _currentIndex == 1
-                        ? AppColors.navy.withOpacity(0.1)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: HugeIcon(
-                    icon: HugeIcons.strokeRoundedUser,
-                    color: _currentIndex == 1
-                        ? AppColors.navy
-                        : AppColors.labelGrey,
-                  ),
+              if (isAvd)
+                const BottomBarItem(
+                  icon: HugeIcons.strokeRoundedDoor01,
+                  label: 'Rooms',
                 ),
+              const BottomBarItem(
+                icon: HugeIcons.strokeRoundedUser,
                 label: 'Profile',
               ),
             ],
@@ -140,6 +101,7 @@ class _SubAdminHomeScreenContentState
               index: _currentIndex,
               children: [
                 _buildApprovedRequests(viewModel),
+                if (isAvd) AvdRoomsScreen(),
                 _buildProfile(viewModel),
               ],
             ),
@@ -336,9 +298,9 @@ class _SubAdminHomeScreenContentState
           Text(
             viewModel.userData?['name'] ?? 'SubAdmin',
             style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF0C4C51),
             ),
           ),
           const SizedBox(height: 4),
@@ -415,49 +377,64 @@ class _SubAdminHomeScreenContentState
     bool isDestructive = false,
     VoidCallback? onTap,
   }) {
-    final color = isDestructive ? AppColors.danger : AppColors.textDark;
-    return AppCard(
-      padding: EdgeInsets.zero,
-      margin: const EdgeInsets.only(bottom: 12),
+    final textColor = isDestructive ? const Color(0xFFF05D51) : const Color(0xFF0C4C51);
+    final iconBgColor = isDestructive ? const Color(0xFFFBEAEA) : const Color(0xFFE2EFF0);
+    final iconColor = isDestructive ? const Color(0xFFF05D51) : const Color(0xFF0C4C51);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E5E5)),
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
             children: [
-              HugeIcon(icon: icon, size: 20, color: color),
-              const SizedBox(width: 14),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: iconBgColor,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: HugeIcon(icon: icon, size: 20, color: iconColor),
+              ),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.labelGrey,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    if (trailing != null) ...[
-                      const SizedBox(height: 2),
+                    if (!isDestructive) ...[
                       Text(
-                        trailing,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: color,
+                        label.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFAAB4BF),
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
                         ),
                       ),
+                      const SizedBox(height: 4),
                     ],
+                    Text(
+                      trailing ?? label,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: textColor,
+                      ),
+                    ),
                   ],
                 ),
               ),
               if (!isDestructive)
                 const Icon(
                   Icons.chevron_right_rounded,
-                  color: AppColors.border,
+                  color: Color(0xFFAAB4BF),
                   size: 20,
                 ),
             ],
@@ -506,8 +483,9 @@ class _SubAdminRequestCard extends StatelessWidget {
                   request.title,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w900,
                     fontSize: 17,
+                    color: Color(0xFF0C4C51),
                   ),
                 ),
               ),

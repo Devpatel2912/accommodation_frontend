@@ -52,17 +52,21 @@ class _NewHouseScreenState extends State<NewHouseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgGrey,
+      backgroundColor: const Color(0xFFF5EFEB),
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: const Color(0xFFF5EFEB),
         elevation: 0,
         title: const Text(
           'Add New House',
-          style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(color: Color(0xFF0C4C51), fontWeight: FontWeight.bold, fontSize: 22),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textDark, size: 20),
-          onPressed: () => Navigator.pop(context),
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF111111), size: 18),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -140,6 +144,7 @@ class _NewHouseScreenState extends State<NewHouseScreen> {
                 text: 'Save Property',
                 height: 56,
                 borderRadius: 16,
+                color: const Color(0xFF0C4C51),
                 isLoading: _isUploading,
                 onPressed: _submitForm,
               ),
@@ -156,7 +161,7 @@ class _NewHouseScreenState extends State<NewHouseScreen> {
       padding: const EdgeInsets.only(bottom: 16, top: 8),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF111111)),
       ),
     );
   }
@@ -184,26 +189,26 @@ class _NewHouseScreenState extends State<NewHouseScreen> {
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          prefixIcon: Icon(icon, color: AppColors.teal, size: 20),
+          prefixIcon: Icon(icon, color: const Color(0xFF0C4C51), size: 20),
           filled: true,
           fillColor: AppColors.white,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           labelStyle: const TextStyle(color: AppColors.labelGrey, fontSize: 13.5),
-          floatingLabelStyle: const TextStyle(color: AppColors.teal, fontWeight: FontWeight.bold, fontSize: 13),
+          floatingLabelStyle: const TextStyle(color: Color(0xFF0C4C51), fontWeight: FontWeight.bold, fontSize: 13),
           hintStyle: const TextStyle(color: AppColors.border, fontSize: 13.5),
           counterText: "",
           errorStyle: const TextStyle(color: AppColors.danger, fontSize: 11.5, height: 1.2),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: AppColors.border),
+            borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: AppColors.teal, width: 1.5),
+            borderSide: const BorderSide(color: Color(0xFF0C4C51), width: 1.5),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
@@ -238,7 +243,7 @@ class _NewHouseScreenState extends State<NewHouseScreen> {
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border, style: BorderStyle.solid),
+          border: Border.all(color: const Color(0xFF0C4C51).withOpacity(0.4), style: BorderStyle.solid), // A dashed border implementation isn't standard in flutter without packages, fallback to tinted border.
         ),
         clipBehavior: Clip.antiAlias,
         child: _image != null
@@ -265,15 +270,15 @@ class _NewHouseScreenState extends State<NewHouseScreen> {
                 : Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [
-                      Icon(Icons.add_photo_alternate_outlined, color: AppColors.teal, size: 40),
+                      Icon(Icons.add_photo_alternate_outlined, color: Color(0xFF0C4C51), size: 40),
                       SizedBox(height: 8),
                       Text(
                         'Upload Property Photos',
-                        style: TextStyle(color: AppColors.labelGrey, fontSize: 13, fontWeight: FontWeight.w600),
+                        style: TextStyle(color: Color(0xFF111111), fontSize: 13, fontWeight: FontWeight.w600),
                       ),
                       Text(
                         'PNG, JPG up to 10MB',
-                        style: TextStyle(color: AppColors.border, fontSize: 11),
+                        style: TextStyle(color: AppColors.labelGrey, fontSize: 11),
                       ),
                     ],
                   ),

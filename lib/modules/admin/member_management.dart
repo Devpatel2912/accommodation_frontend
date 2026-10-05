@@ -91,9 +91,14 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
             children: [
               TextFormField(
                 controller: nameCtrl,
+                style: const TextStyle(fontSize: 15, color: Color(0xFF111111)),
                 decoration: const InputDecoration(
                   labelText: 'Name',
+                  labelStyle: TextStyle(fontSize: 14, color: AppColors.labelGrey),
                   hintText: 'Enter full name',
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.black45)),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF0C4C51))),
+                  contentPadding: EdgeInsets.only(bottom: 8, top: 8),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -102,13 +107,18 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: contactCtrl,
+                style: const TextStyle(fontSize: 15, color: Color(0xFF111111)),
                 decoration: const InputDecoration(
                   labelText: 'Contact',
+                  labelStyle: TextStyle(fontSize: 14, color: AppColors.labelGrey),
                   counterText: "",
                   hintText: '10-digit mobile number',
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.black45)),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF0C4C51))),
+                  contentPadding: EdgeInsets.only(bottom: 8, top: 8),
                 ),
                 keyboardType: TextInputType.phone,
                 maxLength: 10,
@@ -123,12 +133,17 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: emailCtrl,
+                style: const TextStyle(fontSize: 15, color: Color(0xFF111111)),
                 decoration: const InputDecoration(
                   labelText: 'Email',
+                  labelStyle: TextStyle(fontSize: 14, color: AppColors.labelGrey),
                   hintText: 'example@email.com',
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.black45)),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF0C4C51))),
+                  contentPadding: EdgeInsets.only(bottom: 8, top: 8),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
@@ -145,12 +160,17 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                 },
               ),
               if (vm.isAdmin) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: pradeshCtrl,
+                  style: const TextStyle(fontSize: 15, color: Color(0xFF111111)),
                   decoration: const InputDecoration(
                     labelText: 'Pradesh',
+                    labelStyle: TextStyle(fontSize: 14, color: AppColors.labelGrey),
                     hintText: 'Enter pradesh name',
+                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.black45)),
+                    focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF0C4C51))),
+                    contentPadding: EdgeInsets.only(bottom: 8, top: 8),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -179,6 +199,8 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
               text: 'Save Changes',
               height: 44,
               borderRadius: 12,
+              useGradient: false,
+              color: const Color(0xFF435A64), // Dark Blue-Grey shown in screenshot
               isLoading: vm.isUpdating,
               onPressed: () async {
                 if (!formKey.currentState!.validate()) return;
@@ -234,21 +256,27 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgGrey,
+      backgroundColor: const Color(0xFFF5EFEB),
       appBar: AppBar(
         title: const Text(
           'Member Management',
           style: TextStyle(
-            color: AppColors.textDark,
+            color: Color(0xFF0C4C51),
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 22,
           ),
         ),
-        backgroundColor: AppColors.bgGrey,
+        backgroundColor: const Color(0xFFF5EFEB),
         elevation: 0,
         centerTitle: false,
-        automaticallyImplyLeading: ModalRoute.of(context)?.canPop ?? false,
-        iconTheme: const IconThemeData(color: AppColors.textDark),
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF111111), size: 18),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
       ),
       body: Column(
         children: [
@@ -259,7 +287,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
               onChanged: _filterMembers,
               decoration: InputDecoration(
                 hintText: 'Search by name, contact, or pradesh...',
-                prefixIcon: const Icon(Icons.search, color: AppColors.teal),
+                prefixIcon: const Icon(Icons.search, color: AppColors.labelGrey),
                 filled: true,
                 fillColor: AppColors.white,
                 border: OutlineInputBorder(
@@ -336,12 +364,13 @@ class _MemberCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundColor: AppColors.teal.withOpacity(0.1),
+              backgroundColor: const Color(0xFF0C4C51).withOpacity(0.1),
               child: Text(
                 initials,
                 style: const TextStyle(
-                  color: AppColors.teal,
-                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0C4C51),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
                 ),
               ),
             ),
@@ -353,9 +382,9 @@ class _MemberCard extends StatelessWidget {
                   Text(
                     name,
                     style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF111111),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -366,7 +395,7 @@ class _MemberCard extends StatelessWidget {
                       const Icon(
                         Icons.phone_outlined,
                         size: 14,
-                        color: AppColors.labelGrey,
+                        color: Color(0xFF0C4C51),
                       ),
                       const SizedBox(width: 4),
                       Expanded(

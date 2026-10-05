@@ -36,6 +36,7 @@ import 'package:accommodation/presentation/widgets/app_button.dart';
 import 'package:accommodation/presentation/widgets/app_card.dart';
 import 'package:accommodation/presentation/widgets/app_dialog.dart';
 import 'package:accommodation/presentation/widgets/app_loading.dart';
+import 'package:accommodation/presentation/widgets/custom_bottom_bar.dart';
 
 import '../../core/services/push_notification_service.dart';
 
@@ -111,97 +112,22 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: AppColors.bgGrey,
-          floatingActionButton:
-              _currentIndex ==
-                  1 // Request tab
-              ? FloatingActionButton(
-                  onPressed: _addNewRequest,
-                  backgroundColor: AppColors.teal,
-                  foregroundColor: AppColors.white,
-                  child: const HugeIcon(
-                    icon: HugeIcons.strokeRoundedAdd01,
-                    color: AppColors.white,
-                  ),
-                )
-              : null,
-          bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: const Color(0xFFF5EFEB),
+          bottomNavigationBar: CustomBottomBar(
             currentIndex: _currentIndex,
             onTap: (index) => setState(() => _currentIndex = index),
-            selectedItemColor: AppColors.navy,
-            unselectedItemColor: AppColors.labelGrey,
-            showUnselectedLabels: true,
-            type: BottomNavigationBarType.fixed,
-            selectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 12,
-            ),
-            items: [
-              BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _currentIndex == 0
-                        ? AppColors.navy.withOpacity(0.1)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: HugeIcon(
-                    icon: HugeIcons.strokeRoundedHome01,
-                    color: _currentIndex == 0
-                        ? AppColors.navy
-                        : AppColors.labelGrey,
-                  ),
-                ),
+            onAddPressed: _addNewRequest,
+            items: const [
+              BottomBarItem(
+                icon: HugeIcons.strokeRoundedHome01,
                 label: 'Home',
               ),
-              BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _currentIndex == 1
-                        ? AppColors.navy.withOpacity(0.1)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: HugeIcon(
-                    icon: HugeIcons.strokeRoundedTaskDaily01,
-                    color: _currentIndex == 1
-                        ? AppColors.navy
-                        : AppColors.labelGrey,
-                  ),
-                ),
-                label: 'Request',
+              BottomBarItem(
+                icon: HugeIcons.strokeRoundedTaskDaily01,
+                label: 'Requests',
               ),
-              BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _currentIndex == 2
-                        ? AppColors.navy.withOpacity(0.1)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: HugeIcon(
-                    icon: HugeIcons.strokeRoundedUser,
-                    color: _currentIndex == 2
-                        ? AppColors.navy
-                        : AppColors.labelGrey,
-                  ),
-                ),
+              BottomBarItem(
+                icon: HugeIcons.strokeRoundedUser,
                 label: 'Profile',
               ),
             ],
@@ -241,16 +167,26 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                     const Text(
                       'Admin Dashboard',
                       style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textDark,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0C4C51),
+                        letterSpacing: -0.5,
                       ),
                     ),
-                    IconButton(
-                      icon: const HugeIcon(
-                        icon: HugeIcons.strokeRoundedNotification01,
-                        color: AppColors.teal,
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE5E5E5)),
                       ),
+                      child: IconButton(
+                        icon: const HugeIcon(
+                          icon: HugeIcons.strokeRoundedNotification01,
+                          color: Color(0xFF0C4C51),
+                          size: 20,
+                        ),
                       onPressed: () {
                         PushNotificationService().triggerNotification(
                           topic: 'admins',
@@ -263,12 +199,13 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                         );
                       },
                     ),
+                  ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 const Text(
                   'Manage users and their requests.',
-                  style: TextStyle(fontSize: 14, color: AppColors.labelGrey),
+                  style: TextStyle(fontSize: 15, color: Color(0xFF869292)),
                 ),
                 const SizedBox(height: 24),
               ],
@@ -343,12 +280,19 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.tealLight.withOpacity(0.5),
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE2EFF0),
                   shape: BoxShape.circle,
                 ),
-                child: HugeIcon(icon: icon, color: AppColors.teal, size: 28),
+                child: Center(
+                  child: HugeIcon(
+                    icon: icon,
+                    color: const Color(0xFF0C4C51),
+                    size: 28,
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
               Text(
@@ -357,9 +301,9 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: AppColors.textDark,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2C3232),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               // const SizedBox(height: 4),
@@ -397,9 +341,9 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
           Text(
             viewModel.userData?['name'] ?? 'Administrator',
             style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF0C4C51),
             ),
           ),
           const SizedBox(height: 8),
@@ -461,49 +405,64 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
     bool isDestructive = false,
     VoidCallback? onTap,
   }) {
-    final color = isDestructive ? AppColors.danger : AppColors.textDark;
-    return AppCard(
-      padding: EdgeInsets.zero,
-      margin: const EdgeInsets.only(bottom: 12),
+    final textColor = isDestructive ? const Color(0xFFF05D51) : const Color(0xFF0C4C51);
+    final iconBgColor = isDestructive ? const Color(0xFFFBEAEA) : const Color(0xFFE2EFF0);
+    final iconColor = isDestructive ? const Color(0xFFF05D51) : const Color(0xFF0C4C51);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E5E5)),
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
             children: [
-              HugeIcon(icon: icon, size: 20, color: color),
-              const SizedBox(width: 14),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: iconBgColor,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: HugeIcon(icon: icon, size: 20, color: iconColor),
+              ),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.labelGrey,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    if (trailing != null) ...[
-                      const SizedBox(height: 2),
+                    if (!isDestructive) ...[
                       Text(
-                        trailing,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: color,
+                        label.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFAAB4BF),
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
                         ),
                       ),
+                      const SizedBox(height: 4),
                     ],
+                    Text(
+                      trailing ?? label,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: textColor,
+                      ),
+                    ),
                   ],
                 ),
               ),
               if (!isDestructive)
                 const Icon(
                   Icons.chevron_right_rounded,
-                  color: AppColors.border,
+                  color: Color(0xFFAAB4BF),
                   size: 20,
                 ),
             ],
@@ -525,7 +484,7 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
       child: Column(
         children: [
           Container(
-            color: AppColors.bgGrey,
+            color: Colors.transparent,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: Row(
               children: [
@@ -534,7 +493,7 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
                     decoration: BoxDecoration(
                       color: AppColors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: const Color(0xFFE5E5E5)),
                     ),
                     child: TextField(
                       onChanged: (val) => viewModel.setSearchQuery(val),
@@ -570,10 +529,12 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
               viewModel.filterStartDate != null)
             _buildActiveFiltersRow(viewModel),
           const TabBar(
-            labelColor: AppColors.teal,
-            unselectedLabelColor: AppColors.labelGrey,
-            indicatorColor: AppColors.teal,
+            labelColor: Color(0xFF0C4C51),
+            unselectedLabelColor: Color(0xFFAAB4BF),
+            indicatorColor: Color(0xFFF05D51),
             indicatorWeight: 3,
+            labelStyle: TextStyle(fontWeight: FontWeight.bold),
+            unselectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
             tabs: [
               Tab(text: 'New Requests'),
               Tab(text: 'History'),
@@ -779,17 +740,17 @@ class _AdminHomeScreenContentState extends State<_AdminHomeScreenContent> {
         viewModel.filterPradesh != null || viewModel.filterStartDate != null;
     return Container(
       decoration: BoxDecoration(
-        color: hasFilters ? AppColors.teal : AppColors.white,
+        color: hasFilters ? const Color(0xFF0C4C51) : AppColors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: hasFilters ? AppColors.teal : AppColors.border,
+          color: hasFilters ? const Color(0xFF0C4C51) : const Color(0xFFE5E5E5),
         ),
       ),
       child: IconButton(
         onPressed: () => _showFilterDialog(viewModel),
         icon: HugeIcon(
           icon: HugeIcons.strokeRoundedFilter,
-          color: hasFilters ? AppColors.white : AppColors.teal,
+          color: hasFilters ? AppColors.white : const Color(0xFF0C4C51),
           size: 20,
         ),
         tooltip: 'Filter Requests',
@@ -1385,46 +1346,67 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
               children: [
                 Expanded(
                   child: Text(
-                    request.requesterPradesh.isNotEmpty
-                        ? request.requesterPradesh
-                        : 'Unknown Pradesh',
+                    request.requestName.isNotEmpty
+                        ? request.requestName
+                        : 'Unknown Request',
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w800,
                       fontSize: 17,
+                      color: Color(0xFF0C4C51),
                     ),
                   ),
                 ),
                 Row(
                   children: [
                     if (!widget.isHistory)
-                      IconButton(
-                        icon: HugeIcon(
-                          icon: HugeIcons.strokeRoundedEdit01,
-                          color: AppColors.teal,
-                          size: 20,
+                      Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFE5E5E5)),
                         ),
-                        onPressed: isBusy ? null : () => _handleUpdate(context),
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: const HugeIcon(
+                            icon: HugeIcons.strokeRoundedEdit01,
+                            color: Color(0xFF0C4C51),
+                            size: 18,
+                          ),
+                          onPressed: isBusy ? null : () => _handleUpdate(context),
+                        ),
                       ),
-                    IconButton(
-                      icon: HugeIcon(
-                        icon: HugeIcons.strokeRoundedDelete01,
-                        color: AppColors.danger,
-                        size: 20,
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFE5E5E5)),
                       ),
-                      onPressed: isBusy ? null : widget.onDelete,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: const HugeIcon(
+                          icon: HugeIcons.strokeRoundedDelete01,
+                          color: Color(0xFFF05D51),
+                          size: 18,
+                        ),
+                        onPressed: isBusy ? null : widget.onDelete,
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
 
+            const SizedBox(height: 12),
             Row(
               children: [
-                HugeIcon(
+                const HugeIcon(
                   icon: HugeIcons.strokeRoundedCalendar03,
-                  size: 14,
-                  color: AppColors.teal,
+                  size: 16,
+                  color: Color(0xFF0C4C51),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -1432,7 +1414,8 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
                     '${_formatDate(request.checkIn)} - ${_formatDate(request.checkOut)}',
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 14,
+                      color: Color(0xFF0C4C51),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1517,11 +1500,11 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
               : widget.request.status);
 
     if (isApproved) {
-      bgColor = AppColors.tealLight;
-      textColor = AppColors.teal;
+      bgColor = const Color(0xFFE2EFF0);
+      textColor = const Color(0xFF0C4C51);
     } else if (statusUpper == 'REJECTED') {
-      bgColor = AppColors.danger.withOpacity(0.1);
-      textColor = AppColors.danger;
+      bgColor = const Color(0xFFFBEAEA);
+      textColor = const Color(0xFFF05D51);
       label = 'REJECTED';
     } else {
       bgColor = AppColors.pendingBg;
@@ -1529,10 +1512,10 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         label,
@@ -1556,36 +1539,34 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
   }) {
     return InkWell(
       onTap: isActive ? onTap : null,
-      borderRadius: BorderRadius.circular(8),
-      child: Opacity(
-        opacity: isActive ? 1.0 : 0.4,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: isActive ? color.withOpacity(0.5) : AppColors.border,
-            ),
-            borderRadius: BorderRadius.circular(8),
-            color: isActive ? color.withOpacity(0.05) : AppColors.bgGrey,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: const Color(0xFFE5E5E5),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              HugeIcon(
-                icon: icon,
-                size: 16,
-                color: isActive ? color : AppColors.labelGrey,
-              ),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  label,
+          borderRadius: BorderRadius.circular(12),
+          color: isActive ? color.withOpacity(0.05) : const Color(0xFFFAFAFA),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            HugeIcon(
+              icon: icon,
+              size: 16,
+              color: isActive ? color : const Color(0xFFAAB4BF),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                   style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: isActive ? color : AppColors.labelGrey,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: isActive ? color : const Color(0xFFAAB4BF),
                   ),
                 ),
               ),
@@ -1603,8 +1584,7 @@ class _AdminRequestCardState extends State<AdminRequestCard> {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 
   void _showApproveOptions(BuildContext context) {

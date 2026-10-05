@@ -60,24 +60,38 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
     AppDialog.show(
       context: context,
       title: 'Add New Room',
-      icon: Icons.add_business_rounded,
+      icon: Icons.home_outlined,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: noCtrl,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Room Number',
               hintText: 'e.g. 305',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF0C4C51)),
+              ),
             ),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 16),
           TextField(
             controller: capCtrl,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Capacity (Persons)',
               hintText: 'e.g. 4',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF0C4C51)),
+              ),
             ),
             keyboardType: TextInputType.number,
           ),
@@ -97,6 +111,7 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
             builder: (context, vm, child) => AppButton(
               text: 'Add Room',
               height: 44,
+              color: const Color(0xFF0C4C51),
               isLoading: vm.isUpdating,
               onPressed: () async {
                 if (noCtrl.text.isEmpty || capCtrl.text.isEmpty) return;
@@ -135,13 +150,31 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
         children: [
           TextField(
             controller: noCtrl,
-            decoration: const InputDecoration(labelText: 'Room Number'),
+            decoration: InputDecoration(
+              labelText: 'Room Number',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF0C4C51)),
+              ),
+            ),
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 16),
           TextField(
             controller: capCtrl,
-            decoration: const InputDecoration(labelText: 'Capacity (Persons)'),
+            decoration: InputDecoration(
+              labelText: 'Capacity (Persons)',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF0C4C51)),
+              ),
+            ),
             keyboardType: TextInputType.number,
           ),
         ],
@@ -160,6 +193,7 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
             builder: (context, vm, child) => AppButton(
               text: 'Update',
               height: 44,
+              color: const Color(0xFF0C4C51),
               isLoading: vm.isUpdating,
               onPressed: () async {
                 final success = await vm.updateRoom(room.id, {
@@ -217,16 +251,16 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
     final rooms = viewModel.availableRooms;
 
     return Scaffold(
-      backgroundColor: AppColors.bgGrey,
+      backgroundColor: const Color(0xFFF5EFEB),
       appBar: AppBar(
-        backgroundColor: AppColors.bgGrey,
+        backgroundColor: const Color(0xFFF5EFEB),
         elevation: 0,
         title: Text(
           widget.isSelectionMode ? 'Select a Room' : 'AVD Rooms Inventory',
           style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textDark,
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF0C4C51),
           ),
         ),
         leading: IconButton(
@@ -242,10 +276,13 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
           ? null
           : FloatingActionButton.extended(
               onPressed: _showAddRoomDialog,
-              backgroundColor: AppColors.teal,
+              backgroundColor: const Color(0xFF0C4C51),
               foregroundColor: AppColors.white,
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Add Room'),
+              label: const Text(
+                'Add Room',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
             ),
       body: viewModel.isLoading && rooms.isEmpty
           ? const Center(
@@ -279,8 +316,8 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
                             : 'Room Breakdown',
                         style: const TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textDark,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF111111),
                         ),
                       ),
                     ),
@@ -492,7 +529,13 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -512,9 +555,9 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
               Text(
                 count,
                 style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: color,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                  color: (title == 'Occupied') ? color : const Color(0xFF222222),
                 ),
               ),
               Text(
@@ -739,10 +782,10 @@ class _AvdRoomsScreenState extends State<AvdRoomsScreen> {
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
                             value: occupancyPercentage,
-                            backgroundColor: AppColors.border.withOpacity(0.4),
+                            backgroundColor: AppColors.border.withOpacity(0.6),
                             valueColor:
                                 AlwaysStoppedAnimation<Color>(capacityColor),
-                            minHeight: 8,
+                            minHeight: 6,
                           ),
                         ),
                       ),

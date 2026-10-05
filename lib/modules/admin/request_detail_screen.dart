@@ -594,50 +594,82 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.bgGrey,
+      backgroundColor: const Color(0xFFF5EFEB),
       appBar: AppBar(
         title: const Text(
           'Request Details',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: AppColors.textDark,
-            fontSize: 19,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF0C4C51),
+            fontSize: 22,
           ),
         ),
-        backgroundColor: AppColors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textDark,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0, top: 8.0, bottom: 8.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE5E5E5)),
+            ),
+            child: IconButton(
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Color(0xFF0C4C51),
+                size: 18,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
-          onPressed: () => Navigator.pop(context),
         ),
         actions: [
           if (!widget.isHistory)
-            IconButton(
-              icon: HugeIcon(
-                icon: HugeIcons.strokeRoundedEdit01,
-                color: AppColors.teal,
-                size: 22,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Container(
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFE5E5E5)),
+                ),
+                child: IconButton(
+                  icon: const HugeIcon(
+                    icon: HugeIcons.strokeRoundedEdit01,
+                    color: Color(0xFF0C4C51),
+                    size: 18,
+                  ),
+                  onPressed: isBusy
+                      ? null
+                      : () => _handleEdit(context, viewModel, request),
+                ),
               ),
-              onPressed: isBusy
-                  ? null
-                  : () => _handleEdit(context, viewModel, request),
             ),
-          IconButton(
-            icon: HugeIcon(
-              icon: HugeIcons.strokeRoundedDelete01,
-              color: AppColors.danger,
-              size: 22,
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Container(
+              margin: const EdgeInsets.only(right: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFE5E5E5)),
+              ),
+              child: IconButton(
+                icon: const HugeIcon(
+                  icon: HugeIcons.strokeRoundedDelete01,
+                  color: Color(0xFFF05D51),
+                  size: 18,
+                ),
+                onPressed: isBusy
+                    ? null
+                    : () => _handleDelete(context, viewModel, request),
+              ),
             ),
-            onPressed: isBusy
-                ? null
-                : () => _handleDelete(context, viewModel, request),
           ),
-          const SizedBox(width: 8),
         ],
       ),
       body: Stack(
@@ -662,8 +694,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                               request.title,
                               style: const TextStyle(
                                 fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textDark,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF0C4C51),
                               ),
                             ),
                           ),
@@ -703,8 +735,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                               request.requesterPradesh,
                               style: const TextStyle(
                                 fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textDark,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0C4C51),
                               ),
                             ),
                           ],
@@ -729,12 +761,12 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: AppColors.tealLight,
+                                color: const Color(0xFFE2EFF0),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: HugeIcon(
+                              child: const HugeIcon(
                                 icon: HugeIcons.strokeRoundedCalendar03,
-                                color: AppColors.teal,
+                                color: Color(0xFF0C4C51),
                                 size: 18,
                               ),
                             ),
@@ -779,12 +811,12 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: AppColors.tealLight,
+                                color: const Color(0xFFE2EFF0),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: HugeIcon(
+                              child: const HugeIcon(
                                 icon: HugeIcons.strokeRoundedCalendar03,
-                                color: AppColors.teal,
+                                color: Color(0xFF0C4C51),
                                 size: 18,
                               ),
                             ),

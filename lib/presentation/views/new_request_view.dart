@@ -244,7 +244,7 @@ class _NewRequestScreenContentState extends State<_NewRequestScreenContent>
     final viewModel = context.watch<NewRequestViewModel>();
 
     return Scaffold(
-      backgroundColor: AppColors.bgGrey,
+      backgroundColor: const Color(0xFFF5EFEB),
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnim,
@@ -280,9 +280,9 @@ class _NewRequestScreenContentState extends State<_NewRequestScreenContent>
                                         ? 'Edit Request'
                                         : 'New Request',
                                     style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textDark,
+                                      fontSize: 26,
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFF0C4C51),
                                       letterSpacing: -0.3,
                                     ),
                                   ),
@@ -606,6 +606,7 @@ class _NewRequestScreenContentState extends State<_NewRequestScreenContent>
                               : (vm.isEditing
                                     ? 'Update Request'
                                     : 'Submit Request'),
+                          color: const Color(0xFFF05D51),
                           onPressed: vm.isLoading
                               ? null
                               : () => _submit(context),

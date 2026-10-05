@@ -59,13 +59,20 @@ class _RoomManagementScreenState extends State<RoomManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgGrey,
+      backgroundColor: const Color(0xFFF5EFEB),
       appBar: AppBar(
         title: const Text('Room Activity', 
-          style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: AppColors.white,
+          style: TextStyle(color: Color(0xFF0C4C51), fontWeight: FontWeight.w900, fontSize: 22)),
+        backgroundColor: const Color(0xFFF5EFEB),
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textDark),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF111111),
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: _isLoading
           ? const AppLoading()
@@ -97,17 +104,17 @@ class _RoomManagementScreenState extends State<RoomManagementScreen> {
                         leading: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: (isActive ? AppColors.teal : AppColors.labelGrey).withOpacity(0.1),
+                            color: (isActive ? const Color(0xFF0C4C51) : AppColors.labelGrey).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
-                            isActive ? Icons.meeting_room_rounded : Icons.no_meeting_room_rounded,
-                            color: isActive ? AppColors.teal : AppColors.labelGrey,
+                            isActive ? Icons.door_front_door_outlined : Icons.no_meeting_room_rounded,
+                            color: isActive ? const Color(0xFF0C4C51) : AppColors.labelGrey,
                           ),
                         ),
                         title: Text(
                           'Room ${room['room_number']}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark),
+                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF111111)),
                         ),
                         subtitle: Text(
                           'Capacity: ${room['capacity']} Persons',
@@ -121,7 +128,10 @@ class _RoomManagementScreenState extends State<RoomManagementScreen> {
                               )
                             : Switch(
                                 value: isActive,
-                                activeColor: AppColors.teal,
+                                activeColor: const Color(0xFF0C4C51),
+                                activeTrackColor: const Color(0xFF0C4C51),
+                                inactiveThumbColor: Colors.white,
+                                inactiveTrackColor: AppColors.border,
                                 onChanged: (val) => _toggleRoom(roomId, isActive),
                               ),
                       ),

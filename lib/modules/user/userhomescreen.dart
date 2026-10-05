@@ -3,6 +3,7 @@ import 'package:accommodation/core/utils/prefs.dart';
 import 'package:accommodation/presentation/views/login_view.dart';
 import 'package:accommodation/presentation/views/new_request_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:share_plus/share_plus.dart';
 
@@ -28,6 +29,7 @@ import 'package:accommodation/domain/usecases/allocate_member_usecase.dart';
 
 import 'package:accommodation/domain/usecases/get_available_rooms_usecase.dart';
 import 'package:accommodation/presentation/widgets/app_button.dart';
+import 'package:accommodation/presentation/widgets/custom_bottom_bar.dart';
 import 'package:accommodation/presentation/widgets/app_card.dart';
 import 'package:accommodation/presentation/widgets/app_loading.dart';
 
@@ -99,86 +101,21 @@ class _UserHomeScreenContentState extends State<_UserHomeScreenContent> {
       children: [
         Scaffold(
           backgroundColor: AppColors.bgGrey,
-          floatingActionButton: _currentIndex == 0
-              ? FloatingActionButton(
-                  onPressed: _openNewRequest,
-                  backgroundColor: AppColors.teal,
-                  foregroundColor: AppColors.white,
-                  child: const HugeIcon(
-                    icon: HugeIcons.strokeRoundedAdd01,
-                    color: AppColors.white,
-                  ),
-                )
-              : null,
-          bottomNavigationBar: BottomNavigationBar(
+          bottomNavigationBar: CustomBottomBar(
             currentIndex: _currentIndex,
             onTap: (index) => setState(() => _currentIndex = index),
-            selectedItemColor: AppColors.navy,
-            unselectedItemColor: AppColors.labelGrey,
-            showUnselectedLabels: true,
-            type: BottomNavigationBarType.fixed,
-            items: [
-              BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _currentIndex == 0
-                        ? AppColors.navy.withOpacity(0.1)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: HugeIcon(
-                    icon: HugeIcons.strokeRoundedTaskDaily01,
-                    color: _currentIndex == 0
-                        ? AppColors.navy
-                        : AppColors.labelGrey,
-                  ),
-                ),
-                label: 'Request',
+            onAddPressed: _openNewRequest,
+            items: const [
+              BottomBarItem(
+                icon: HugeIcons.strokeRoundedTaskDaily01,
+                label: 'Requests',
               ),
-              BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _currentIndex == 1
-                        ? AppColors.navy.withOpacity(0.1)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: HugeIcon(
-                    icon: HugeIcons.strokeRoundedUserGroup,
-                    color: _currentIndex == 1
-                        ? AppColors.navy
-                        : AppColors.labelGrey,
-                  ),
-                ),
+              BottomBarItem(
+                icon: HugeIcons.strokeRoundedUserGroup,
                 label: 'Members',
               ),
-              BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _currentIndex == 2
-                        ? AppColors.navy.withOpacity(0.1)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: HugeIcon(
-                    icon: HugeIcons.strokeRoundedUser,
-                    color: _currentIndex == 2
-                        ? AppColors.navy
-                        : AppColors.labelGrey,
-                  ),
-                ),
+              BottomBarItem(
+                icon: HugeIcons.strokeRoundedUser,
                 label: 'Profile',
               ),
             ],
@@ -310,14 +247,14 @@ class _UserHomeScreenContentState extends State<_UserHomeScreenContent> {
       child: Column(
         children: [
           // const SizedBox(height: 16),
-          // Text(
-          //   viewModel.userData?['name'] ?? 'Loading...',
-          //   style: const TextStyle(
-          //     fontSize: 22,
-          //     fontWeight: FontWeight.w700,
-          //     color: AppColors.textDark,
-          //   ),
-          // ),
+          Text(
+            viewModel.userData?['name'] ?? 'User',
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+              color: AppColors.teal,
+            ),
+          ),
           const SizedBox(height: 8),
           const SizedBox(height: 32),
           _buildProfileItem(
@@ -340,6 +277,8 @@ class _UserHomeScreenContentState extends State<_UserHomeScreenContent> {
             'Role',
             trailing: viewModel.userData?['role'] ?? 'N/A',
           ),
+          const SizedBox(height: 24),
+          _buildWebformLinkCard(),
           const SizedBox(height: 24),
           _buildProfileItem(
             HugeIcons.strokeRoundedLogout01,
@@ -375,6 +314,144 @@ class _UserHomeScreenContentState extends State<_UserHomeScreenContent> {
     );
   }
 
+  Widget _buildWebformLinkCard() {
+    const webformUrl = 'https://accommodation-webform.vercel.app/';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.teal.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const HugeIcon(
+                  icon: HugeIcons.strokeRoundedLink01,
+                  size: 20,
+                  color: AppColors.teal,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Booking Form Link',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Share this link for accommodation requests',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.labelGrey,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.bgGrey.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    webformUrl,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textDark,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: () {
+                    Clipboard.setData(const ClipboardData(text: webformUrl));
+                    AppNotifications.showTopSnackBar(
+                      context,
+                      'Link copied to clipboard!',
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.teal.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const HugeIcon(
+                      icon: HugeIcons.strokeRoundedCopy01,
+                      size: 18,
+                      color: AppColors.teal,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                SharePlus.instance.share(
+                  ShareParams(
+                    text: 'Book your accommodation here:\n$webformUrl',
+                  ),
+                );
+              },
+              icon: const HugeIcon(
+                icon: HugeIcons.strokeRoundedShare01,
+                size: 18,
+                color: AppColors.white,
+              ),
+              label: const Text(
+                'Share Link',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.white,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.teal,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildProfileItem(
     dynamic icon,
     String label, {
@@ -382,61 +459,65 @@ class _UserHomeScreenContentState extends State<_UserHomeScreenContent> {
     bool isDestructive = false,
     VoidCallback? onTap,
   }) {
-    final color = isDestructive ? AppColors.danger : AppColors.textDark;
-    return AppCard(
-      padding: EdgeInsets.zero,
-      margin: const EdgeInsets.only(bottom: 12),
+    final textColor = isDestructive ? AppColors.danger : AppColors.teal;
+    final iconBgColor = isDestructive ? AppColors.pendingBg : AppColors.tealLight;
+    final iconColor = isDestructive ? AppColors.danger : AppColors.teal;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
             children: [
-              HugeIcon(icon: icon, size: 20, color: color),
-              const SizedBox(width: 14),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: iconBgColor,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: HugeIcon(icon: icon, size: 20, color: iconColor),
+              ),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (!isDestructive) ...[
+                      Text(
+                        label.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.labelGrey,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                    ],
                     Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.labelGrey,
-                        fontWeight: FontWeight.w500,
+                      trailing ?? (isDestructive ? label : 'Tap to view'),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: textColor,
                       ),
                     ),
-                    if (trailing != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        trailing,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: color,
-                        ),
-                      ),
-                    ] else if (!isDestructive) ...[
-                      const SizedBox(height: 2),
-                      const Text(
-                        'Tap to view',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.hintGrey,
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
-              if (onTap != null || trailing == null)
-                Icon(
+              if (!isDestructive)
+                const Icon(
                   Icons.chevron_right_rounded,
+                  color: AppColors.labelGrey,
                   size: 20,
-                  color: isDestructive
-                      ? AppColors.danger.withOpacity(0.5)
-                      : AppColors.hintGrey,
                 ),
             ],
           ),
@@ -444,6 +525,7 @@ class _UserHomeScreenContentState extends State<_UserHomeScreenContent> {
       ),
     );
   }
+
 }
 
 class RequestDetailsScreen extends StatelessWidget {

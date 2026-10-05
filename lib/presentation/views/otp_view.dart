@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:accommodation/core/utils/color.dart';
 import 'package:accommodation/core/utils/notifications.dart';
 import 'package:accommodation/core/utils/prefs.dart';
 import 'package:accommodation/modules/admin/admin_home_screen.dart';
@@ -27,7 +27,11 @@ class _OtpViewState extends State<OtpView> {
     final viewModel = context.read<LoginViewModel>();
     _notificationSubscription = viewModel.uiNotificationStream.listen((n) {
       if (mounted) {
-        AppNotifications.showTopSnackBar(context, n.message, isError: n.isError);
+        AppNotifications.showTopSnackBar(
+          context,
+          n.message,
+          isError: n.isError,
+        );
       }
     });
   }
@@ -44,190 +48,159 @@ class _OtpViewState extends State<OtpView> {
 
     final defaultPinTheme = PinTheme(
       width: 52,
-      height: 52,
+      height: 60,
       textStyle: const TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-        color: AppColors.textDark,
+        fontSize: 22,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF2C3232),
       ),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border, width: 1.5),
+        border: Border.all(color: const Color(0xFFD0D5D5), width: 1),
       ),
     );
 
     final focusedPinTheme = defaultPinTheme.copyWith(
-      decoration: defaultPinTheme.decoration!.copyWith(
-        border: Border.all(color: AppColors.teal, width: 2),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF0C4C51), width: 2),
       ),
     );
 
     final submittedPinTheme = defaultPinTheme.copyWith(
       decoration: defaultPinTheme.decoration!.copyWith(
-        color: AppColors.bgGrey.withOpacity(0.5),
+        color: const Color(0xFFFAFAFA),
       ),
     );
 
     return Scaffold(
-      backgroundColor: AppColors.bgGrey,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textDark),
-          onPressed: () => Navigator.pop(context),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFE2E9DF), Color(0xFFF1D8CF)],
+          ),
         ),
-      ),
-      body: Stack(
-        children: [
-          // Decorative blobs
-          Positioned(
-            top: -40,
-            right: -30,
-            child: _Blob(size: 160, color: AppColors.tealLight),
-          ),
-          Positioned(
-            bottom: 100,
-            left: -40,
-            child: _Blob(size: 130, color: AppColors.tealLight),
-          ),
-
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 66,
-                        height: 66,
-                        decoration: const BoxDecoration(
-                          color: AppColors.tealLight,
-                          shape: BoxShape.circle,
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(28, 36, 28, 28),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: const Color(0xFFD0D5D5),
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(
-                          Icons.mark_email_read_rounded,
-                          color: AppColors.teal,
-                          size: 32,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Verify Email',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textDark,
-                          letterSpacing: -0.3,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 16,
+                            color: Color(0xFF2C3232),
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          constraints: const BoxConstraints(
+                            minWidth: 40,
+                            minHeight: 40,
+                          ),
+                          padding: EdgeInsets.zero,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'We sent a 6-digit code to\n${viewModel.emailController.text}',
-                        textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Enter verification code',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF2C3232),
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        text: 'We sent a 6-digit code to ',
                         style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.labelGrey,
-                          height: 1.5,
+                          fontSize: 14,
+                          color: Color(0xFF869292),
+                          height: 1.4,
                         ),
-                      ),
-                      const SizedBox(height: 32),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const _FieldLabel('Verification Code'),
-                                GestureDetector(
-                                  onTap: () async {
-                                      await viewModel.sendOtp();
-                                    },
-                                  child: const Text(
-                                    'Resend code',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.teal,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                        children: [
+                          TextSpan(
+                            text: viewModel.emailController.text,
+                            style: const TextStyle(
+                              color: Color(0xFF2C3232),
+                              fontWeight: FontWeight.w700,
                             ),
-                            const SizedBox(height: 20),
-                            Center(
-                              child: Pinput(
-                                length: 6,
-                                controller: viewModel.otpController,
-                                focusNode: viewModel.otpFocusNode,
-                                defaultPinTheme: defaultPinTheme,
-                                focusedPinTheme: focusedPinTheme,
-                                submittedPinTheme: submittedPinTheme,
-                                hapticFeedbackType: HapticFeedbackType.lightImpact,
-                                onCompleted: (pin) {
-                                  // Optionally auto-verify here
-                                },
-                                cursor: Column(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Container(
-                                      margin: const EdgeInsets.only(bottom: 9),
-                                      width: 22,
-                                      height: 1,
-                                      color: AppColors.teal,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 36),
-                            _VerifyButton(viewModel: viewModel),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 32),
+                    Pinput(
+                      length: 6,
+                      controller: viewModel.otpController,
+                      focusNode: viewModel.otpFocusNode,
+                      defaultPinTheme: defaultPinTheme,
+                      focusedPinTheme: focusedPinTheme,
+                      submittedPinTheme: submittedPinTheme,
+                      hapticFeedbackType: HapticFeedbackType.lightImpact,
+                      onCompleted: (pin) {
+                        // Optionally auto-verify here
+                      },
+                      cursor: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 1.5,
+                            height: 24,
+                            color: const Color(0xFF0C4C51),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    const Text(
+                      'Resend code in 29s',
+                      style: TextStyle(fontSize: 14, color: Color(0xFF869292)),
+                    ),
+                    const SizedBox(height: 24),
+                    _VerifyButton(viewModel: viewModel),
+                    const SizedBox(height: 24),
+                  ],
                 ),
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 }
-
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text.toUpperCase(),
-      style: const TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
-        color: AppColors.teal,
-        letterSpacing: 1.2,
-      ),
-    );
-  }
-}
-
-
 
 class _VerifyButton extends StatelessWidget {
   const _VerifyButton({required this.viewModel});
@@ -262,60 +235,102 @@ class _VerifyButton extends StatelessWidget {
                 }
               },
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.teal,
-          foregroundColor: AppColors.white,
+          backgroundColor: const Color(0xFFF05D51),
+          disabledBackgroundColor: const Color(0xFFF05D51).withOpacity(0.6),
+          foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           elevation: 0,
         ),
         child: viewModel.isLoading
             ? const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2),
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
               )
             : const Text(
-                'Verify & Login',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                'Login',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
       ),
     );
   }
 }
 
-// class _TrustBadge extends StatelessWidget {
-//   const _TrustBadge();
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Row(
-//       mainAxisAlignment: MainAxisAlignment.center,
-//       children: [
-//         Icon(Icons.lock_outline_rounded, size: 14, color: AppColors.footerGrey),
-//         const SizedBox(width: 6),
-//         const Text(
-//           'Secure 256-bit SSL encrypted connection',
-//           style: TextStyle(fontSize: 10, color: AppColors.footerGrey),
-//         ),
-//       ],
-//     );
-//   }
-// }
-
-class _Blob extends StatelessWidget {
-  const _Blob({required this.size, required this.color});
-  final double size;
-  final Color color;
+class _DashedBox extends StatelessWidget {
+  const _DashedBox({required this.text});
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.5),
-        shape: BoxShape.circle,
+    return CustomPaint(
+      painter: _DashedBorderPainter(color: const Color(0xFFABC4C1), radius: 10),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFECF3F2),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF869292),
+            height: 1.4,
+          ),
+        ),
       ),
     );
   }
+}
+
+class _DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double radius;
+
+  _DashedBorderPainter({required this.color, required this.radius});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+
+    final path = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, 0, size.width, size.height),
+          Radius.circular(radius),
+        ),
+      );
+
+    Path dashPath = Path();
+    double dashWidth = 5.0;
+    double dashSpace = 4.0;
+    double distance = 0.0;
+
+    for (PathMetric pathMetric in path.computeMetrics()) {
+      while (distance < pathMetric.length) {
+        dashPath.addPath(
+          pathMetric.extractPath(distance, distance + dashWidth),
+          Offset.zero,
+        );
+        distance += dashWidth;
+        distance += dashSpace;
+      }
+      distance = 0.0;
+    }
+    canvas.drawPath(dashPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

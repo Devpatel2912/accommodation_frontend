@@ -65,19 +65,19 @@ class AppDialog extends StatelessWidget {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: (iconColor ?? AppColors.teal).withOpacity(0.1),
+                    color: (iconColor ?? const Color(0xFF0C4C51)).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: icon is IconData
                       ? Icon(
                           icon,
                           size: 32,
-                          color: iconColor ?? AppColors.teal,
+                          color: iconColor ?? const Color(0xFF0C4C51),
                         )
                       : HugeIcon(
                           icon: icon,
                           size: 32,
-                          color: iconColor ?? AppColors.teal,
+                          color: iconColor ?? const Color(0xFF0C4C51),
                         ),
                 ),
                 const SizedBox(height: 20),
@@ -86,8 +86,8 @@ class AppDialog extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textDark,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF0C4C51),
                   letterSpacing: -0.5,
                 ),
                 textAlign: TextAlign.center,

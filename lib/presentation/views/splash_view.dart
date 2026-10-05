@@ -5,6 +5,7 @@ import 'package:accommodation/presentation/views/login_view.dart';
 import 'package:accommodation/modules/admin/admin_home_screen.dart';
 import 'package:accommodation/modules/user/userhomescreen.dart';
 import 'package:accommodation/modules/subadmin/subadmin_home_screen.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -75,58 +76,62 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      backgroundColor: const Color(0xFFF05D51),
+      body: SizedBox(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: AppColors.primaryGradient,
-        ),
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: ScaleTransition(
             scale: _scaleAnimation,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Stack(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.home_work_rounded,
-                    size: 80,
-                    color: Colors.white,
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const HugeIcon(
+                            icon: HugeIcons.strokeRoundedHome01,
+                            color: Colors.white,
+                            size: 44,
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'ACCOMMODATION',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Safe & Comfortable Stay',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Text(
-                  'ACCOMMODATION',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 2,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Safe & Comfortable Stay',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withOpacity(0.7),
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 60),
-                SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.5)),
+                Positioned(
+                  bottom: 60,
+                  left: 40,
+                  right: 40,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      minHeight: 4,
+                      backgroundColor: Colors.white.withOpacity(0.3),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
                   ),
                 ),
               ],
@@ -137,3 +142,4 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
     );
   }
 }
+

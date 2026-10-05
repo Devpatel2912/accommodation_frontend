@@ -72,9 +72,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               children: [
                 TextFormField(
                   controller: nameCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Name',
                     hintText: 'Full Name',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0C4C51))),
                   ),
                   validator: (val) =>
                       val == null || val.trim().isEmpty ? 'Enter name' : null,
@@ -82,9 +84,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: emailCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Email',
                     hintText: 'user@example.com',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0C4C51))),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (val) {
@@ -100,10 +104,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: phoneCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Phone',
                     hintText: '10 digit number',
                     counterText: "",
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0C4C51))),
                   ),
                   keyboardType: TextInputType.phone,
                   maxLength: 10,
@@ -123,9 +129,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         return TextFormField(
                           controller: controller,
                           focusNode: focusNode,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Pradesh',
                             hintText: 'Search Pradesh',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0C4C51))),
                           ),
                           validator: (val) => val == null || val.trim().isEmpty ? 'Select a pradesh' : null,
                         );
@@ -165,7 +173,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       if (val != 'SUBADMIN') selectedSubAdminType = null;
                     });
                   },
-                  decoration: const InputDecoration(labelText: 'Role'),
+                  decoration: InputDecoration(
+                    labelText: 'Role',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0C4C51))),
+                  ),
                 ),
                 if (selectedRole == 'SUBADMIN') ...[
                   const SizedBox(height: 12),
@@ -176,9 +188,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         .toList(),
                     onChanged: (val) =>
                         setDialogState(() => selectedSubAdminType = val),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'SubAdmin Type',
                       hintText: 'Select AVD or ANAND',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0C4C51))),
                     ),
                     validator: (val) => selectedRole == 'SUBADMIN' && val == null
                         ? 'Select SubAdmin type'
@@ -204,6 +218,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             builder: (context, vm, child) => AppButton(
               text: 'Add User',
               height: 44,
+              color: const Color(0xFF0C4C51),
               borderRadius: 12,
               isLoading: vm.isUpdating,
               onPressed: () async {
@@ -263,14 +278,22 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               children: [
                 TextFormField(
                   controller: nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Name'),
+                  decoration: InputDecoration(
+                    labelText: 'Name',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0C4C51))),
+                  ),
                   validator: (val) =>
                       val == null || val.trim().isEmpty ? 'Enter name' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: emailCtrl,
-                  decoration: const InputDecoration(labelText: 'Email'),
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0C4C51))),
+                  ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) return 'Enter email';
@@ -285,9 +308,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: phoneCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Phone',
                     counterText: "",
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0C4C51))),
                   ),
                   keyboardType: TextInputType.phone,
                   maxLength: 10,
@@ -307,9 +332,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         return TextFormField(
                           controller: controller,
                           focusNode: focusNode,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Pradesh',
                             hintText: 'Search Pradesh',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0C4C51))),
                           ),
                           validator: (val) => val == null || val.trim().isEmpty ? 'Select a pradesh' : null,
                         );
@@ -349,7 +376,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       if (val != 'SUBADMIN') selectedSubAdminType = null;
                     });
                   },
-                  decoration: const InputDecoration(labelText: 'Role'),
+                  decoration: InputDecoration(
+                    labelText: 'Role',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0C4C51))),
+                  ),
                 ),
                 if (selectedRole.toUpperCase() == 'SUBADMIN') ...[
                   const SizedBox(height: 12),
@@ -360,9 +391,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         .toList(),
                     onChanged: (val) =>
                         setDialogState(() => selectedSubAdminType = val),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'SubAdmin Type',
                       hintText: 'Select AVD or ANAND',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0C4C51))),
                     ),
                     validator: (val) =>
                         selectedRole.toUpperCase() == 'SUBADMIN' && val == null
@@ -389,6 +422,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             builder: (context, vm, child) => AppButton(
               text: 'Update',
               height: 44,
+              color: const Color(0xFF0C4C51),
               borderRadius: 12,
               isLoading: vm.isUpdating,
               onPressed: () async {
@@ -453,21 +487,23 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgGrey,
+      backgroundColor: const Color(0xFFF5EFEB),
       appBar: AppBar(
         title: const Text(
           'User Management',
           style: TextStyle(
-            color: AppColors.textDark,
-            fontWeight: FontWeight.bold,
+            color: Color(0xFF0C4C51),
+            fontWeight: FontWeight.w900,
+            fontSize: 22,
           ),
         ),
-        backgroundColor: AppColors.bgGrey,
+        backgroundColor: const Color(0xFFF5EFEB),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textDark,
+            color: Color(0xFF111111),
+            size: 20,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -503,11 +539,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                           children: [
                             CircleAvatar(
                               radius: 22,
-                              backgroundColor: AppColors.tealLight,
+                              backgroundColor: const Color(0xFF0C4C51).withOpacity(0.1),
                               child: Text(
                                 initials,
                                 style: const TextStyle(
-                                  color: AppColors.teal,
+                                  color: Color(0xFF0C4C51),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),
@@ -524,9 +560,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                         child: Text(
                                           user['name'] ?? 'Unknown',
                                           style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                            color: AppColors.textDark,
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 16,
+                                            color: Color(0xFF111111),
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -553,22 +589,22 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                           color: user['role'] == 'ADMIN'
                                               ? AppColors.teal.withOpacity(0.12)
                                               : user['role'] == 'SUBADMIN'
-                                                  ? const Color(0xFFFFF3E0)
+                                                  ? const Color(0xFFF05D51).withOpacity(0.12)
                                                   : AppColors.border.withOpacity(0.3),
-                                          borderRadius: BorderRadius.circular(5),
+                                          borderRadius: BorderRadius.circular(10),
                                         ),
                                         child: Text(
                                           user['role'] == 'SUBADMIN'
-                                              ? 'SUBADMIN (${user['sub_admin_type'] ?? ''})'
+                                              ? 'Subadmin (${user['sub_admin_type'] ?? ''})'
                                               : (user['role'] ?? 'USER'),
                                           style: TextStyle(
-                                            fontSize: 8.5,
+                                            fontSize: 9.5,
                                             fontWeight: FontWeight.w800,
                                             letterSpacing: 0.4,
                                             color: user['role'] == 'ADMIN'
                                                 ? AppColors.teal
                                                 : user['role'] == 'SUBADMIN'
-                                                    ? const Color(0xFFE65100)
+                                                    ? const Color(0xFFF05D51)
                                                     : AppColors.labelGrey,
                                           ),
                                         ),
@@ -636,7 +672,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddUserDialog,
-        backgroundColor: AppColors.teal,
+        backgroundColor: const Color(0xFF0C4C51),
         icon: const Icon(Icons.person_add_rounded, color: Colors.white),
         label: const Text(
           'Add User',

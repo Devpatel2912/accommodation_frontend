@@ -32,49 +32,63 @@ class HouseDetailsScreen extends StatelessWidget {
     final capacity = house['capacity']?.toString() ?? '0';
     final remaining = house['remaining_capacity']?.toString() ?? capacity;
     final isActive = house['is_active'] == true;
-    final imagePath = house['image_url'] ?? '';
     final lat = double.tryParse(house['latitude']?.toString() ?? '0.0') ?? 0.0;
     final lng = double.tryParse(house['longitude']?.toString() ?? '0.0') ?? 0.0;
 
     return Scaffold(
-      backgroundColor: AppColors.bgGrey,
+      backgroundColor: const Color(0xFFF5EFEB),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 300,
+            expandedHeight: 220,
             pinned: true,
-            backgroundColor: AppColors.navy,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
+            backgroundColor: const Color(0xFF0C4C51),
+            leading: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withOpacity(0.3)),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
             flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (imagePath.isNotEmpty)
-                    imagePath.startsWith('http')
-                        ? Image.network(imagePath, fit: BoxFit.cover)
-                        : Image.file(File(imagePath), fit: BoxFit.cover)
-                  else
-                    Container(
-                      color: AppColors.bgGrey,
-                      child: const Icon(Icons.home_work_outlined, size: 80, color: AppColors.border),
-                    ),
-                  // Gradient overlay for better text visibility
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black54,
+              background: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 24, bottom: 24, top: 40),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.person_outline_rounded, color: Colors.white, size: 20),
+                              const SizedBox(height: 8),
+                              Text(capacity, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                              const Text('Total', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                            ],
+                          ),
+                          const SizedBox(width: 40),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.check_circle_outline_rounded, color: Colors.white, size: 20),
+                              const SizedBox(height: 8),
+                              Text(remaining, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                              const Text('Available', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                            ],
+                          ),
                         ],
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -91,67 +105,106 @@ class HouseDetailsScreen extends StatelessWidget {
                         child: Text(
                           name,
                           style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textDark,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF0C4C51),
                           ),
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         decoration: BoxDecoration(
-                          color: isActive ? AppColors.tealLight : const Color(0xFFFFEBEE),
-                          borderRadius: BorderRadius.circular(12),
+                          color: isActive ? const Color(0xFF0C4C51) : AppColors.danger,
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Text(
-                          isActive ? 'ACTIVE' : 'INACTIVE',
-                          style: TextStyle(
-                            color: isActive ? AppColors.teal : AppColors.danger,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isActive ? Icons.check_circle_outline : Icons.error_outline,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              isActive ? 'Active' : 'Inactive',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  _buildSectionTitle('Contact Information'),
+                  const SizedBox(height: 30),
+                  _buildSectionTitle('CONTACT INFORMATION'),
                   _buildDetailCard([
                     _buildDetailRow(Icons.person_outline_rounded, 'Owner', name),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 64),
+                      child: Divider(color: AppColors.border.withOpacity(0.5), height: 1),
+                    ),
                     _buildDetailRow(Icons.phone_outlined, 'Phone', contact),
                   ]),
                   const SizedBox(height: 24),
-                  _buildSectionTitle('Location'),
+                  _buildSectionTitle('LOCATION'),
                   _buildDetailCard([
-                    _buildDetailRow(Icons.location_on_outlined, 'Address', address),
-                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0C4C51).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.location_on_outlined, size: 20, color: Color(0xFF0C4C51)),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Address', style: TextStyle(fontSize: 12, color: AppColors.labelGrey, fontWeight: FontWeight.w500)),
+                              const SizedBox(height: 4),
+                              Text(address, style: const TextStyle(fontSize: 15, color: Color(0xFF111111), fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () => _launchMap(context, lat, lng),
-                        icon: const Icon(Icons.map_outlined),
+                        icon: const Icon(Icons.map_outlined, size: 18),
                         label: const Text('View on Google Maps'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.white,
-                          foregroundColor: AppColors.teal,
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF0C4C51),
                           elevation: 0,
-                          side: const BorderSide(color: AppColors.teal),
+                          side: const BorderSide(color: Color(0xFF0C4C51)),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                         ),
                       ),
                     ),
                   ]),
                   const SizedBox(height: 24),
-                  _buildSectionTitle('Capacity'),
+                  _buildSectionTitle('CAPACITY'),
                   Row(
                     children: [
                       Expanded(
                         child: _buildCapacityItem(
-                          Icons.group_outlined,
+                          Icons.person_outline_rounded,
                           'Total Capacity',
                           capacity,
-                          AppColors.navy,
+                          const Color(0xFF0C4C51),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -160,7 +213,7 @@ class HouseDetailsScreen extends StatelessWidget {
                           Icons.event_available_outlined,
                           'Available',
                           remaining,
-                          AppColors.teal,
+                          const Color(0xFF0C4C51),
                         ),
                       ),
                     ],
@@ -181,8 +234,8 @@ class HouseDetailsScreen extends StatelessWidget {
       child: Text(
         title,
         style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
           color: AppColors.labelGrey,
           letterSpacing: 0.5,
         ),
@@ -194,15 +247,8 @@ class HouseDetailsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: children,
@@ -212,17 +258,17 @@ class HouseDetailsScreen extends StatelessWidget {
 
   Widget _buildDetailRow(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.bgGrey,
-              borderRadius: BorderRadius.circular(10),
+              color: const Color(0xFF0C4C51).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, size: 20, color: AppColors.teal),
+            child: Icon(icon, size: 20, color: const Color(0xFF0C4C51)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -233,12 +279,13 @@ class HouseDetailsScreen extends StatelessWidget {
                   label,
                   style: const TextStyle(fontSize: 12, color: AppColors.labelGrey, fontWeight: FontWeight.w500),
                 ),
+                const SizedBox(height: 4),
                 Text(
                   value,
                   style: const TextStyle(
                     fontSize: 15,
-                    color: AppColors.textDark,
-                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111111),
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -253,21 +300,20 @@ class HouseDetailsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.1)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 28),
+          Icon(icon, color: color, size: 24),
           const SizedBox(height: 8),
           Text(
             value,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: color),
           ),
           Text(
             label,
-            style: TextStyle(fontSize: 12, color: color.withOpacity(0.7), fontWeight: FontWeight.w500),
+            style: TextStyle(fontSize: 12, color: color.withOpacity(0.7), fontWeight: FontWeight.w600),
           ),
         ],
       ),

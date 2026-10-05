@@ -162,35 +162,38 @@ class _HouseManageScreenState extends State<HouseManageScreen> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.bgGrey,
+      backgroundColor: const Color(0xFFF5EFEB),
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: const Color(0xFFF5EFEB),
         elevation: 0,
         title: const Text(
           'House Management',
           style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textDark,
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF0C4C51),
           ),
         ),
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textDark,
+            color: Color(0xFF111111),
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.add_circle_outline_rounded,
-              color: AppColors.teal,
-              size: 28,
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
             ),
-            onPressed: _addNewHouse,
-          ),
+            child: IconButton(
+              icon: const Icon(Icons.add, color: Color(0xFF0C4C51), size: 24),
+              onPressed: _addNewHouse,
+            ),
+          )
         ],
       ),
       body: Column(
@@ -310,6 +313,15 @@ class _HouseManageScreenState extends State<HouseManageScreen> {
                   ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _addNewHouse,
+        backgroundColor: const Color(0xFF0C4C51),
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text(
+          'Add House',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
@@ -479,264 +491,114 @@ class _HouseManageScreenState extends State<HouseManageScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  child: imagePath.isNotEmpty
-                      ? (imagePath.startsWith('http')
-                          ? Image.network(
-                              imagePath,
-                              height: 200,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                    height: 200,
-                                    color: AppColors.bgGrey,
-                                    child: const Icon(
-                                      Icons.home_rounded,
-                                      size: 40,
-                                      color: AppColors.border,
-                                    ),
-                                  ),
-                            )
-                          : Image.file(
-                              File(imagePath),
-                              height: 200,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                    height: 200,
-                                    color: AppColors.bgGrey,
-                                    child: const Icon(
-                                      Icons.home_rounded,
-                                      size: 40,
-                                      color: AppColors.border,
-                                    ),
-                                  ),
-                            ))
-                      : Container(
-                          height: 200,
-                          width: double.infinity,
-                          color: AppColors.bgGrey,
-                          child: const Icon(
-                            Icons.home_work_outlined,
-                            size: 40,
-                            color: AppColors.border,
-                          ),
-                        ),
-                ),
-              if (!widget.isSelectionMode)
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: Row(
-                    children: [
-                      _buildHeaderAction(
-                        icon: Icons.edit_rounded,
-                        onTap: onEdit,
-                      ),
-                      const SizedBox(width: 10),
-                      _buildHeaderAction(
-                        icon: Icons.delete_rounded,
-                        onTap: onDelete,
-                        isDelete: true,
-                      ),
-                    ],
-                  ),
-                ),
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Row(
-                  children: [
-                    isUpdating
-                        ? const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            child: SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: AppColors.white,
-                              ),
-                            ),
-                          )
-                        : Transform.scale(
-                            scale: 0.8,
-                            child: Switch(
-                              value: status == 'Active',
-                              onChanged: onStatusChanged,
-                              activeColor: AppColors.white,
-                              activeTrackColor: AppColors.teal,
-                              inactiveThumbColor: AppColors.white,
-                              inactiveTrackColor: Colors.black26,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                            ),
-                          ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusColor,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            status == 'Active'
-                                ? Icons.check_circle_rounded
-                                : Icons.error_rounded,
-                            color: AppColors.white,
-                            size: 14,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            status,
-                            style: const TextStyle(
-                              color: AppColors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name.toLowerCase(),
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Owner: $owner',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.labelGrey,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.location_on_rounded,
-                      size: 18,
-                      color: AppColors.navy,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        address,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.labelGrey,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Divider(height: 1, color: AppColors.border),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (!widget.isSelectionMode)
                     Row(
                       children: [
-                        const Icon(
-                          Icons.group_rounded,
-                          size: 18,
-                          color: AppColors.labelGrey,
+                        Container(
+                          decoration: BoxDecoration(color: const Color(0xFF0C4C51).withOpacity(0.1), shape: BoxShape.circle),
+                          child: IconButton(
+                            icon: const Icon(Icons.edit_outlined, color: Color(0xFF0C4C51), size: 18),
+                            onPressed: onEdit,
+                            constraints: const BoxConstraints(),
+                            padding: const EdgeInsets.all(10),
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          'Total: $tot | Available: $rem',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.labelGrey,
+                        Container(
+                          decoration: BoxDecoration(color: AppColors.danger.withOpacity(0.1), shape: BoxShape.circle),
+                          child: IconButton(
+                            icon: const Icon(Icons.delete_outline_rounded, color: AppColors.danger, size: 18),
+                            onPressed: onDelete,
+                            constraints: const BoxConstraints(),
+                            padding: const EdgeInsets.all(10),
+                          ),
+                        ),
+                        const Spacer(),
+                        isUpdating
+                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                            : Switch(
+                                value: status == 'Active',
+                                onChanged: onStatusChanged,
+                                activeColor: Colors.white,
+                                activeTrackColor: const Color(0xFF0C4C51),
+                              ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: statusColor == AppColors.teal ? const Color(0xFF0C4C51) : statusColor,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(status == 'Active' ? Icons.check_circle_outline : Icons.error_outline, color: Colors.white, size: 14),
+                              const SizedBox(width: 4),
+                              Text(status, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    if (widget.isSelectionMode && status == 'Active')
-                      ElevatedButton(
-                        onPressed: onSelect,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.teal,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          'Assign',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      )
-                    else
-                      InkWell(
-                        onTap: () => _launchMap(latitude, longitude),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.map_outlined,
-                              size: 18,
-                              color: AppColors.labelGrey,
-                            ),
-                            const SizedBox(width: 6),
-                            const Text(
-                              'View Map',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.labelGrey,
-                              ),
-                            ),
-                          ],
-                        ),
+                  if (!widget.isSelectionMode) const SizedBox(height: 16),
+                  Text(name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF111111))),
+                  const SizedBox(height: 4),
+                  Text('Owner: $owner', style: const TextStyle(fontSize: 14, color: AppColors.labelGrey, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on_outlined, size: 18, color: Color(0xFF0C4C51)),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(address, style: const TextStyle(fontSize: 14, color: AppColors.labelGrey, fontWeight: FontWeight.w500))),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(height: 1, color: AppColors.border),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.person_outline_rounded, size: 18, color: Color(0xFF0C4C51)),
+                          const SizedBox(width: 8),
+                          Text('Total: $tot | Available: $rem', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF111111))),
+                        ],
                       ),
-                  ],
-                ),
-              ],
+                      if (widget.isSelectionMode && status == 'Active')
+                        ElevatedButton(
+                          onPressed: onSelect,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0C4C51),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            elevation: 0,
+                          ),
+                          child: const Text('Assign', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                        )
+                      else
+                        InkWell(
+                          onTap: () => _launchMap(latitude, longitude),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.map_outlined, size: 18, color: Color(0xFF0C4C51)),
+                              const SizedBox(width: 4),
+                              const Text('View Map', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF0C4C51))),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       )
     );
   }
